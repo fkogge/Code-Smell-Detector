@@ -24,10 +24,10 @@ private:
     int numLinesOfCode;
     int numParameters;
     string codeString;
-    void parseLinesFromFunction();
-    string extractName(int startLineNumber, int endDefLineNumber);
+    string extractName();
     string transformToCodeString();
     int extractParameterCount();
+    string getFunctionHeader() const;
 };
 
 

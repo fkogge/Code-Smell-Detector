@@ -4,7 +4,6 @@
 
 #include "CodeSmellDetector.h"
 #include "Function.h"
-#include "Function.cpp"
 #include <vector>
 #include <sstream>
 #include <iostream>
@@ -45,7 +44,7 @@ void CodeSmellDetector::detectLongMethod() {
 void CodeSmellDetector::detectLongParameterList() {
     for (const Function &function : functionList) {
         int parameterCount = function.getNumberOfParameters();
-        if (lineCount > MAX_PARAMETER_COUNT) {
+        if (parameterCount > MAX_PARAMETER_COUNT) {
             LongParameterListOccurrence longParameterList(LONG_PARAMETER_LIST, parameterCount, function.getName());
             longParameterListOccurences.push_back(longParameterList);
         }

@@ -6,6 +6,23 @@
 
 using namespace std;
 
+class Hey {
+public:
+    Hey() {
+        cout << "hey" << endl;
+    }
+    void hi() {
+        cout << "hi" << endl;
+        what();
+    }
+
+
+private:
+    void what() {
+        cout << "what" << endl;
+    }
+};
+
 const int LONG_METHOD_OPTION = 1;
 const int LONG_PARAMETER_LIST_OPTION = 2;
 const int DUPLICATED_CODE_DETECTION_OPTION = 3;
@@ -13,32 +30,32 @@ const int QUIT_OPTION = 4;
 
 void printIntro();
 void fillFileNames(vector<string> &fileNames, int argCount, char *cmdLineArgs[]);
-void fillFileContents(vector<string> &fileContents, const string &filename);
+bool fillFileContents(vector<string> &fileContents, const string &filename);
+bool invalidFileExtension(const string &filename);
 void fillCodeSmellDetectorList(vector<CodeSmellDetector> &codeSmellDetectorList, const vector<vector<string>> &fileContents);
 void displayMainMenu(CodeSmellDetector codeSmellDetector);
-int selectMenuOption();
+string selectMenuOption();
+bool isValidOption(string userInput);
 
 void printLongMethodInfo(const CodeSmellDetector &detector);
 void printLongParameterListInfo(const CodeSmellDetector &codeSmellDetector);
 void printDuplicatedCodeInfo(const CodeSmellDetector &codeSmellDetector);
 
 int main(int argc, char *argv[]) {
+    Hey hey;
+    hey.hi();
     //const int QUIT = 4;
     printIntro();
 
     string filename = argv[1];
-   // vector<string> fileNames;
-   // fillFileNames(fileNames, argc, argv);
-
+    if (invalidFileExtension(filename)) {
+        cerr << "input file must have extension [.cpp]" << endl;
+        return EXIT_FAILURE;
+    }
     vector<string> fileContents;
-    fillFileContents(fileContents, filename);
-
-//    for (size_t i = 0; i < fileContents.size(); i++) {
-//        for (size_t j = 0; j < fileContents[i].size(); j++) {
-//            cout << fileContents[i][j] << endl;
-//        }
-//
-//    }
+    if(!fillFileContents(fileContents, filename)) {
+        return EXIT_FAILURE;
+    }
 
     vector<CodeSmellDetector> codeSmellDetectorList;
     //fillCodeSmellDetectorList(codeSmellDetectorList, fileContents);
@@ -51,9 +68,13 @@ int main(int argc, char *argv[]) {
     }
 
     int option = -1;
+    string userInput;
     while (option != QUIT_OPTION) {
-        displayMainMenu(codeSmellDetector);
-        option = selectMenuOption();
+        do {
+            displayMainMenu(codeSmellDetector);
+            userInput = selectMenuOption();
+        } while (!isValidOption(userInput));
+        option = stoi(userInput);
 
         if (option == LONG_METHOD_OPTION) {
             printLongMethodInfo(codeSmellDetector);
@@ -131,9 +152,7 @@ void fillFileNames(vector<string> &fileNames, int argCount, char *cmdLineArgs[])
     }
 }
 
-void fillFileContents(vector<string> &fileContents, const string& filename) {
-
-    //vector<string> linesFromFile;
+bool fillFileContents(vector<string> &fileContents, const string& filename) {
     ifstream inputFile;
     inputFile.open(filename);
 
@@ -144,9 +163,11 @@ void fillFileContents(vector<string> &fileContents, const string& filename) {
         }
     } else {
         cerr << "Error opening file: " << filename << endl;
+        return false;
     }
 
     inputFile.close();
+    return true;
 }
 
 void fillCodeSmellDetectorList(vector<CodeSmellDetector> &codeSmellDetectorList, const vector<vector<string>> &fileContents) {
@@ -166,11 +187,29 @@ void displayMainMenu(CodeSmellDetector codeSmellDetector) {
     cout << QUIT_OPTION << ". Quit" << endl;
 }
 
-int selectMenuOption() {
+bool isValidOption(string userInput) {
     int option;
+    try {
+        option = stoi(userInput);
+    } catch (const exception &e) {
+        cout << "caught invalid input [" << userInput << "]: " << e.what() << endl;
+        return false;
+    }
+
+    return option >= LONG_METHOD_OPTION && option <= QUIT_OPTION;
+}
+
+
+string selectMenuOption() {
+    string option;
     cout << "> ";
     cin >> option;
     cin.ignore();
     cout << endl;
     return option;
+}
+
+bool invalidFileExtension(const string &filename) {
+    size_t dotIndex = filename.find_last_of('.');
+    return dotIndex == string::npos || filename.substr(dotIndex) != ".cpp";
 }

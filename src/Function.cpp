@@ -14,7 +14,7 @@ using namespace std;
 Function::Function(vector<string> codeLines, int startLineNumber, int endDefLineNumber, int endLineNumber) {
     this->codeLines = codeLines;
     this->numLinesOfCode = endLineNumber - startLineNumber;
-    this->name = extractName(startLineNumber, endDefLineNumber);
+    this->name = extractName();
     this->codeString = transformToCodeString();
     this->numParameters = extractParameterCount();
 }
@@ -35,22 +35,16 @@ string Function::getCodeString() const {
     return codeString;
 }
 
-string Function::extractName(int startLineNumber, int endDefLineNumber) {
+string Function::extractName() {
     string name = "";
-    string firstLine = codeLines[0];
-    string openingCurlyBracketLine = codeLines[endDefLineNumber - startLineNumber];
-    //cout << firstLine << endl << openingCurlyBracketLine << endl;
+    string functionHeader = getFunctionHeader();
+    istringstream iss(functionHeader);
 
-    istringstream iss(firstLine);
-
-    string throwaway;
-    iss >> throwaway;
-
-    string restOfFirstLine;
-    iss >> restOfFirstLine;
-    //cout << restOfFirstLine << endl;
-
-    name = restOfFirstLine.substr(0, restOfFirstLine.find('('));
+    string throwawayReturnType;
+    iss >> throwawayReturnType;
+    string restOfFunctionHeader;
+    iss >> restOfFunctionHeader;
+    name = restOfFunctionHeader.substr(0, restOfFunctionHeader.find('('));
     cout << "function name: " << name << endl;
     return name;
 }
@@ -67,5 +61,29 @@ string Function::transformToCodeString() {
 }
 
 int Function::extractParameterCount() {
-    return 0;
+    string functionHeader = getFunctionHeader();
+    size_t openParenIndex = functionHeader.find('(');
+    size_t closingParenIndex = functionHeader.find(')');
+
+    // Adjustments by 1 to remove the parentheses
+    string paramString = functionHeader.substr(openParenIndex + 1, closingParenIndex - openParenIndex - 1);
+    cout << "param string: " << paramString << endl;
+
+    if (paramString.empty()) {
+        return 0;
+    }
+
+    int paramCount = 1;
+    for (char c : paramString) {
+        if (c == ',') {
+            paramCount++;
+        }
+    }
+    cout << "param count: " << paramCount << endl;
+    return paramCount;
+
+}
+
+string Function::getFunctionHeader() const {
+    return codeLines[0];
 }
