@@ -11,7 +11,9 @@
 
 using namespace std;
 
-Function::Function(vector<string> codeLines, int startLineNumber, int endDefLineNumber, int endLineNumber) {
+const size_t Function::FIRST_LINE = 0;
+
+Function::Function(vector<string> codeLines, size_t startLineNumber, size_t endDefLineNumber, size_t endLineNumber) {
     this->codeLines = codeLines;
     this->numLinesOfCode = endLineNumber - startLineNumber;
     this->name = extractName();
@@ -19,11 +21,11 @@ Function::Function(vector<string> codeLines, int startLineNumber, int endDefLine
     this->numParameters = extractParameterCount();
 }
 
-int Function::getNumberOfLinesOfCode() const {
+size_t Function::getNumberOfLinesOfCode() const {
     return numLinesOfCode;
 }
 
-int Function::getNumberOfParameters() const {
+size_t Function::getNumberOfParameters() const {
     return numParameters;
 }
 
@@ -60,7 +62,7 @@ string Function::transformToCodeString() {
     return codeString;
 }
 
-int Function::extractParameterCount() {
+size_t Function::extractParameterCount() {
     string functionHeader = getFunctionHeader();
     size_t openParenIndex = functionHeader.find('(');
     size_t closingParenIndex = functionHeader.find(')');
@@ -73,7 +75,7 @@ int Function::extractParameterCount() {
         return 0;
     }
 
-    int paramCount = 1;
+    size_t paramCount = 1;
     for (char c : paramString) {
         if (c == ',') {
             paramCount++;
@@ -85,5 +87,5 @@ int Function::extractParameterCount() {
 }
 
 string Function::getFunctionHeader() const {
-    return codeLines[0];
+    return codeLines[FIRST_LINE];
 }

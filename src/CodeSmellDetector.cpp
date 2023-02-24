@@ -20,7 +20,7 @@ CodeSmellDetector::CodeSmellDetector(const string &fileName, const vector<string
     this->fileName = fileName;
     this->linesFromFile = linesFromFile;
     this->linesFromFile.insert(this->linesFromFile.begin(), "SKIP INDEX 0");
-    this->lineCount = (int) linesFromFile.size();
+    this->lineCount = linesFromFile.size();
 
     extractFunctions();
     detectLongMethod();
@@ -33,9 +33,9 @@ CodeSmellDetector::CodeSmellDetector(const string &fileName, const vector<string
 }
 
 void CodeSmellDetector::extractFunctions() {
-    int currentLineNumber = 1;
-    int openParenLineNumber = 1;
-    int openCurlyLineNumber = 1;
+    size_t currentLineNumber = 1;
+    size_t openParenLineNumber = 1;
+    size_t openCurlyLineNumber = 1;
 
     while (currentLineNumber < lineCount) {
         skipBlankLines(currentLineNumber);
@@ -52,7 +52,7 @@ void CodeSmellDetector::extractFunctions() {
         cout << "curly: " << openCurlyLineNumber;
 
         string line = linesFromFile[currentLineNumber];
-        int endLineNumber = findFunctionClosingCurlyBracket(line, openCurlyLineNumber);
+        int endLineNumber = findFunctionClosingCurlyBracketLine(openCurlyLineNumber);
 
         cout << "\nstart line number: " << openParenLineNumber << endl;
         cout << "end line number: " << endLineNumber << endl;
@@ -67,20 +67,20 @@ void CodeSmellDetector::extractFunctions() {
     }
 }
 
-void CodeSmellDetector::skipBlankLines(int &currentLineNumber) {
+void CodeSmellDetector::skipBlankLines(size_t &currentLineNumber) {
     while (currentLineNumber < lineCount && linesFromFile[currentLineNumber].empty()) {
         currentLineNumber++;
     }
 }
 
-void CodeSmellDetector::skipLinesUntilFunctionHeader(int &currentLineNumber) {
+void CodeSmellDetector::skipLinesUntilFunctionHeader(size_t &currentLineNumber) {
     while (currentLineNumber < lineCount &&
            !containsCharacter(linesFromFile[currentLineNumber], CodeSmellDetector::OPENING_PAREN)) {
         currentLineNumber++;
     }
 }
 
-void CodeSmellDetector::skipLinesUntilOpeningCurlyBracket(int &currentLineNumber) {
+void CodeSmellDetector::skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumber) {
     while (currentLineNumber < lineCount &&
            !containsCharacter(linesFromFile[currentLineNumber], CodeSmellDetector::OPENING_CURLY_BRACKET)) {
         currentLineNumber++;
@@ -91,16 +91,16 @@ bool CodeSmellDetector::containsCharacter(const string &str, const char &charact
     return str.find(character) != string::npos;
 }
 
-int CodeSmellDetector::findFunctionClosingCurlyBracket(const string &startLine, int lineNumber) {
+size_t CodeSmellDetector::findFunctionClosingCurlyBracketLine(size_t startLineNumber) {
     stack<char> openCurlyBrackets;
 
-    for (size_t i = lineNumber; i < this->linesFromFile.size(); i++) {
-        for (const char &currentChar : this->linesFromFile[i]) {
+    for (size_t currentLineNumber = startLineNumber; currentLineNumber < linesFromFile.size(); currentLineNumber++) {
+        for (const char &currentChar : linesFromFile[currentLineNumber]) {
             if (currentChar == CodeSmellDetector::OPENING_CURLY_BRACKET) {
                 openCurlyBrackets.push(currentChar);
             } else if (currentChar == CodeSmellDetector::CLOSING_CURLY_BRACKET) {
                 if (openCurlyBrackets.size() == 1) {
-                    return i;
+                    return currentLineNumber;
                 } else if (!openCurlyBrackets.empty()) {
                     openCurlyBrackets.pop();
                 }
@@ -111,7 +111,7 @@ int CodeSmellDetector::findFunctionClosingCurlyBracket(const string &startLine, 
     return -1;
 }
 
-void CodeSmellDetector::extractFunctionContent(vector<string> &functionContent, int startLineNumber, int endLineNumber) {
+void CodeSmellDetector::extractFunctionContent(vector<string> &functionContent, size_t startLineNumber, size_t endLineNumber) {
     for (int i = startLineNumber; i <= endLineNumber; i++) {
         functionContent.push_back(linesFromFile[i]);
         cout << linesFromFile[i] << endl;
@@ -122,7 +122,7 @@ void CodeSmellDetector::detectLongMethod() {
     for (const Function &function : functionList) {
         int lineCount = function.getNumberOfLinesOfCode();
         if (lineCount > MAX_LINES_OF_CODE) {
-            LongMethodOccurrence longMethod(LONG_METHOD, lineCount, function.getName());
+            LongMethod longMethod(LONG_METHOD, lineCount, function.getName());
             longMethodOccurences.push_back(longMethod);
         }
     }
@@ -214,7 +214,7 @@ vector<CodeSmellDetector::DuplicatedCode> CodeSmellDetector::getDuplicateCodeOcc
     return duplicatedCodeOccurrences;
 }
 
-vector<CodeSmellDetector::LongMethodOccurrence> CodeSmellDetector::getLongMethodOccurrences() const {
+vector<CodeSmellDetector::LongMethod> CodeSmellDetector::getLongMethodOccurrences() const {
     return longMethodOccurences;
 }
 

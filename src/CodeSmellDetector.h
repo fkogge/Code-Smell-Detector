@@ -22,10 +22,10 @@ public:
 
     struct LongMethod {
         SmellType type;
-        int lineCount;
+        size_t lineCount;
         string functionName;
 
-        LongMethod(SmellType type, int lineCount, string functionName) {
+        LongMethod(SmellType type, size_t lineCount, string functionName) {
             this->type = type;
             this->lineCount = lineCount;
             this->functionName = functionName;
@@ -34,10 +34,10 @@ public:
 
     struct LongParameterList  {
         SmellType type;
-        int parameterCount;
+        size_t parameterCount;
         string functionName;
 
-        LongParameterList(SmellType type, int parameterCount, string functionName) {
+        LongParameterList(SmellType type, size_t parameterCount, string functionName) {
             this->type = type;
             this->parameterCount = parameterCount;
             this->functionName = functionName;
@@ -52,7 +52,6 @@ public:
         DuplicatedCode(SmellType type, double similarityIndex, string functionOne, string functionTwo) {
             this->type = type;
             this->similarityIndex = similarityIndex;
-           // pair<string, string> funcNames(functionOne, functionTwo);
             this->functionNames = pair<string, string>(functionOne, functionTwo);
         }
     };
@@ -82,17 +81,17 @@ private:
     vector<LongParameterList> longParameterListOccurences;
     vector<DuplicatedCode> duplicatedCodeOccurrences;
 
-    int lineCount;
+    size_t lineCount;
     vector<string> linesFromFile;
     string fileName;
     vector<Function> functionList;
     vector<string> functionNames;
 
-    void skipBlankLines(int &currentLineNumber);
-    void skipLinesUntilFunctionHeader(int &currentLineNumber);
-    void skipLinesUntilOpeningCurlyBracket(int &currentLineNumber);
-    int findFunctionClosingCurlyBracket(const string &startLine, int lineNumber);
-    void extractFunctionContent(vector<string> &functionContent, int startLineNumber, int endLineNumber);
+    void skipBlankLines(size_t &currentLineNumber);
+    void skipLinesUntilFunctionHeader(size_t &currentLineNumber);
+    void skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumber);
+    size_t findFunctionClosingCurlyBracketLine(size_t startLineNumber);
+    void extractFunctionContent(vector<string> &functionContent, size_t startLineNumber, size_t endLineNumber);
     void extractFunctions();
     void detectLongMethod();
     void detectLongParameterList();

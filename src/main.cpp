@@ -14,7 +14,7 @@ const int QUIT_OPTION = 4;
 void printIntro();
 bool fillFileContents(vector<string> &fileContents, const string &filename);
 bool invalidFileExtension(const string &filename);
-void displayMainMenu(CodeSmellDetector codeSmellDetector);
+void displayMainMenu();
 string selectMenuOption();
 bool isValidOption(string userInput);
 void validateUserInput();
@@ -131,7 +131,7 @@ bool fillFileContents(vector<string> &fileContents, const string& filename) {
     return true;
 }
 
-void displayMainMenu(CodeSmellDetector codeSmellDetector) {
+void displayMainMenu() {
     cout << "\nPlease choose one of the following options: " << endl;
     cout << LONG_METHOD_OPTION << ". Long Method/Function Detection" << endl;
     cout << LONG_PARAMETER_LIST_OPTION << ". Long Parameter List Detection" << endl;
@@ -145,7 +145,7 @@ void run(const CodeSmellDetector &codeSmellDetector) {
 
     do {
         do {
-            displayMainMenu(codeSmellDetector);
+            displayMainMenu();
             userInput = selectMenuOption();
         } while (!isValidOption(userInput));
 
