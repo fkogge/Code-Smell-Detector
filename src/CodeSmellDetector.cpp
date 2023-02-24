@@ -132,7 +132,7 @@ void CodeSmellDetector::detectLongParameterList() {
     for (const Function &function : functionList) {
         int parameterCount = function.getNumberOfParameters();
         if (parameterCount > MAX_PARAMETER_COUNT) {
-            LongParameterListOccurrence longParameterList(LONG_PARAMETER_LIST, parameterCount, function.getName());
+            LongParameterList longParameterList(LONG_PARAMETER_LIST, parameterCount, function.getName());
             longParameterListOccurences.push_back(longParameterList);
         }
     }
@@ -154,7 +154,7 @@ void CodeSmellDetector::detectDuplicatedCode() {
             double similarityIndex = calculateSimilarityIndex(functionOneString, functionTwoString);
             cout << "similarity index for " << functionOneName << " and " << functionTwoName << ": " << similarityIndex << endl;
             if (similarityIndex > MAX_SIMILARITY_INDEX) {
-                DuplicateCodeOccurrence duplicatedCode(DUPLICATED_CODE, similarityIndex, functionOneName, functionTwoName);
+                DuplicatedCode duplicatedCode(DUPLICATED_CODE, similarityIndex, functionOneName, functionTwoName);
                 duplicatedCodeOccurrences.push_back(duplicatedCode);
             }
         }
@@ -206,11 +206,11 @@ vector<string> CodeSmellDetector::getFunctionNames() {
     return functionNames;
 }
 
-vector<CodeSmellDetector::LongParameterListOccurrence> CodeSmellDetector::getLongParameterListOccurrences() const {
+vector<CodeSmellDetector::LongParameterList> CodeSmellDetector::getLongParameterListOccurrences() const {
     return longParameterListOccurences;
 }
 
-vector<CodeSmellDetector::DuplicateCodeOccurrence> CodeSmellDetector::getDuplicateCodeOccurrences() const {
+vector<CodeSmellDetector::DuplicatedCode> CodeSmellDetector::getDuplicateCodeOccurrences() const {
     return duplicatedCodeOccurrences;
 }
 

@@ -17,51 +17,40 @@ bool invalidFileExtension(const string &filename);
 void displayMainMenu(CodeSmellDetector codeSmellDetector);
 string selectMenuOption();
 bool isValidOption(string userInput);
+void validateUserInput();
+void run(const CodeSmellDetector &codeSmellDetector);
 
 void printFunctionNames(const vector<string> &functionNames);
-void printLongMethodInfo(const CodeSmellDetector &detector);
+void printLongMethodInfo(const CodeSmellDetector &codeSmellDetector);
 void printLongParameterListInfo(const CodeSmellDetector &codeSmellDetector);
 void printDuplicatedCodeInfo(const CodeSmellDetector &codeSmellDetector);
 
 int main(int argc, char *argv[]) {
     printIntro();
 
+    if (argc != 2) {
+        cerr << "usage: " << argv[0] << " " << "FILENAME" << endl;
+        return EXIT_FAILURE;
+    }
+
     string filename = argv[1];
     if (invalidFileExtension(filename)) {
         cerr << "input file must have extension [.cpp]" << endl;
         return EXIT_FAILURE;
     }
+
     vector<string> fileContents;
     if(!fillFileContents(fileContents, filename)) {
+        cerr << "error opening file: [" << filename << "]" << endl;
         return EXIT_FAILURE;
     }
 
-    vector<CodeSmellDetector> codeSmellDetectorList;
     CodeSmellDetector codeSmellDetector(filename, fileContents);
 
     vector<string> functionNameList = codeSmellDetector.getFunctionNames();
     printFunctionNames(functionNameList);
 
-    int option;
-    string userInput;
-    do {
-        do {
-            displayMainMenu(codeSmellDetector);
-            userInput = selectMenuOption();
-        } while (!isValidOption(userInput));
-        option = stoi(userInput);
-
-        if (option == LONG_METHOD_OPTION) {
-            printLongMethodInfo(codeSmellDetector);
-        } else if (option == LONG_PARAMETER_LIST_OPTION) {
-            printLongParameterListInfo(codeSmellDetector);
-        } else if (option == DUPLICATED_CODE_DETECTION_OPTION) {
-            printDuplicatedCodeInfo(codeSmellDetector);
-        } else if (option != QUIT_OPTION) {
-            cout << "Invalid option. Please try again.";
-        }
-    } while (option != QUIT_OPTION);
-
+    run(codeSmellDetector);
 
     return 0;
 }
@@ -73,14 +62,14 @@ void printFunctionNames(const vector<string> &functionNames) {
     }
 }
 
-void printLongMethodInfo(const CodeSmellDetector &detector) {
-    vector<CodeSmellDetector::LongMethodOccurrence> longMethodOccurences = detector.getLongMethodOccurrences();
+void printLongMethodInfo(const CodeSmellDetector &codeSmellDetector) {
+    vector<CodeSmellDetector::LongMethod> longMethodOccurrences = codeSmellDetector.getLongMethodOccurrences();
 
-    if (detector.hasLongMethodSmell()) {
-        for (CodeSmellDetector::LongMethodOccurrence occurence : longMethodOccurences) {
-            cout << "The " << occurence.functionName
-                 << " function is a " << CodeSmellDetector::smellTypeToString(occurence.type)
-                 << ". It contains " << occurence.lineCount << " lines of code. "
+    if (codeSmellDetector.hasLongMethodSmell()) {
+        for (const CodeSmellDetector::LongMethod &longMethod : longMethodOccurrences) {
+            cout << "The " << longMethod.functionName
+                 << " function is a " << CodeSmellDetector::smellTypeToString(longMethod.type)
+                 << ". It contains " << longMethod.lineCount << " lines of code. "
                  << endl;
         }
     } else {
@@ -89,14 +78,14 @@ void printLongMethodInfo(const CodeSmellDetector &detector) {
 }
 
 void printLongParameterListInfo(const CodeSmellDetector &codeSmellDetector) {
-    vector<CodeSmellDetector::LongParameterListOccurrence> longParameterListOccurrences =
+    vector<CodeSmellDetector::LongParameterList> longParameterListOccurrences =
             codeSmellDetector.getLongParameterListOccurrences();
 
     if (codeSmellDetector.hasLongParameterListSmell()) {
-        for (CodeSmellDetector::LongParameterListOccurrence occurence : longParameterListOccurrences) {
-            cout << "The " << occurence.functionName
-                 << " function has a " << CodeSmellDetector::smellTypeToString(occurence.type)
-                 << ". It contains " << occurence.parameterCount << " parameters. "
+        for (const CodeSmellDetector::LongParameterList &occurrence : longParameterListOccurrences) {
+            cout << "The " << occurrence.functionName
+                 << " function has a " << CodeSmellDetector::smellTypeToString(occurrence.type)
+                 << ". It contains " << occurrence.parameterCount << " parameters. "
                  << endl;
         }
     } else {
@@ -105,11 +94,11 @@ void printLongParameterListInfo(const CodeSmellDetector &codeSmellDetector) {
 }
 
 void printDuplicatedCodeInfo(const CodeSmellDetector &codeSmellDetector) {
-    vector<CodeSmellDetector::DuplicateCodeOccurrence> duplicatedCodeOccurrences =
+    vector<CodeSmellDetector::DuplicatedCode> duplicatedCodeOccurrences =
             codeSmellDetector.getDuplicateCodeOccurrences();
 
     if (codeSmellDetector.hasDuplicateCodeSmell()) {
-        for (CodeSmellDetector::DuplicateCodeOccurrence occurrence : duplicatedCodeOccurrences) {
+        for (const CodeSmellDetector::DuplicatedCode &occurrence : duplicatedCodeOccurrences) {
             cout << "The functions " << occurrence.functionNames.first << " and " << occurrence.functionNames.second
                  << " are duplicated. Their similarity percentage is " << occurrence.similarityIndex * 100
                  << endl;
@@ -135,7 +124,6 @@ bool fillFileContents(vector<string> &fileContents, const string& filename) {
             fileContents.push_back(line);
         }
     } else {
-        cerr << "Error opening file: " << filename << endl;
         return false;
     }
 
@@ -151,18 +139,53 @@ void displayMainMenu(CodeSmellDetector codeSmellDetector) {
     cout << QUIT_OPTION << ". Quit" << endl;
 }
 
+void run(const CodeSmellDetector &codeSmellDetector) {
+    int option;
+    string userInput;
+
+    do {
+        do {
+            displayMainMenu(codeSmellDetector);
+            userInput = selectMenuOption();
+        } while (!isValidOption(userInput));
+
+        option = stoi(userInput);
+
+        if (option == LONG_METHOD_OPTION) {
+            printLongMethodInfo(codeSmellDetector);
+        } else if (option == LONG_PARAMETER_LIST_OPTION) {
+            printLongParameterListInfo(codeSmellDetector);
+        } else if (option == DUPLICATED_CODE_DETECTION_OPTION) {
+            printDuplicatedCodeInfo(codeSmellDetector);
+        }
+    } while (option != QUIT_OPTION);
+}
+
 bool isValidOption(string userInput) {
     int option;
+    string errorMessage = userInput + " is not a valid option. \nPlease choose an integer between "
+                                    + to_string(LONG_METHOD_OPTION) + " and " + to_string(QUIT_OPTION);
+
+    for (const char &c : userInput) {
+        if (c == '.') {
+            cout << errorMessage << endl;
+            return false;
+        }
+    }
+
     try {
         option = stoi(userInput);
     } catch (const exception &e) {
-        cout << "caught invalid input [" << userInput << "]: " << e.what() << endl;
+        cout << errorMessage << endl;
         return false;
     }
-    // TODO: verify not double
-    return option >= LONG_METHOD_OPTION && option <= QUIT_OPTION;
-}
 
+    bool isValid = option >= LONG_METHOD_OPTION && option <= QUIT_OPTION;
+    if (!isValid) {
+        cout << errorMessage << endl;
+    }
+    return isValid;
+}
 
 string selectMenuOption() {
     string option;

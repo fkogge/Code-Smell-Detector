@@ -20,36 +20,36 @@ public:
         LONG_METHOD, LONG_PARAMETER_LIST, DUPLICATED_CODE
     };
 
-    struct LongMethodOccurrence {
+    struct LongMethod {
         SmellType type;
         int lineCount;
         string functionName;
 
-        LongMethodOccurrence(SmellType type, int lineCount, string functionName) {
+        LongMethod(SmellType type, int lineCount, string functionName) {
             this->type = type;
             this->lineCount = lineCount;
             this->functionName = functionName;
         }
     };
 
-    struct LongParameterListOccurrence  {
+    struct LongParameterList  {
         SmellType type;
         int parameterCount;
         string functionName;
 
-        LongParameterListOccurrence(SmellType type, int parameterCount, string functionName) {
+        LongParameterList(SmellType type, int parameterCount, string functionName) {
             this->type = type;
             this->parameterCount = parameterCount;
             this->functionName = functionName;
         }
     };
 
-    struct DuplicateCodeOccurrence  {
+    struct DuplicatedCode  {
         SmellType type;
         double similarityIndex;
         pair<string, string> functionNames;
 
-        DuplicateCodeOccurrence(SmellType type, double similarityIndex, string functionOne, string functionTwo) {
+        DuplicatedCode(SmellType type, double similarityIndex, string functionOne, string functionTwo) {
             this->type = type;
             this->similarityIndex = similarityIndex;
            // pair<string, string> funcNames(functionOne, functionTwo);
@@ -59,9 +59,9 @@ public:
 
     CodeSmellDetector(const string &fileName, const vector<string> &linesFromFile);
     vector<string> getFunctionNames();
-    vector<LongMethodOccurrence> getLongMethodOccurrences() const;
-    vector<LongParameterListOccurrence> getLongParameterListOccurrences() const;
-    vector<DuplicateCodeOccurrence> getDuplicateCodeOccurrences() const;
+    vector<LongMethod> getLongMethodOccurrences() const;
+    vector<LongParameterList> getLongParameterListOccurrences() const;
+    vector<DuplicatedCode> getDuplicateCodeOccurrences() const;
     bool hasLongMethodSmell() const;
     bool hasLongParameterListSmell() const;
     bool hasDuplicateCodeSmell() const;
@@ -78,9 +78,9 @@ private:
     static const char CLOSING_CURLY_BRACKET;
     static const char OPENING_PAREN;
 
-    vector<LongMethodOccurrence> longMethodOccurences;
-    vector<LongParameterListOccurrence> longParameterListOccurences;
-    vector<DuplicateCodeOccurrence> duplicatedCodeOccurrences;
+    vector<LongMethod> longMethodOccurences;
+    vector<LongParameterList> longParameterListOccurences;
+    vector<DuplicatedCode> duplicatedCodeOccurrences;
 
     int lineCount;
     vector<string> linesFromFile;
