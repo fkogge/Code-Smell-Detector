@@ -145,13 +145,16 @@ void CodeSmellDetector::detectDuplicatedCode() {
             if (j == i) {
                 continue;
             }
-
-            string functionOneString = functionList[i].getCodeString();
-            string functionTwoString = functionList[j].getCodeString();
+            Function functionOne = functionList[i];
+            Function functionTwo = functionList[j];
+            string functionOneString = functionOne.getCodeString();
+            string functionTwoString = functionTwo.getCodeString();
+            string functionOneName = functionOne.getName();
+            string functionTwoName = functionTwo.getName();
             double similarityIndex = calculateSimilarityIndex(functionOneString, functionTwoString);
-            cout << "similarity index for " << functionList[i].getName() << " and " << functionList[j].getName() << ": " << similarityIndex << endl;
+            cout << "similarity index for " << functionOneName << " and " << functionTwoName << ": " << similarityIndex << endl;
             if (similarityIndex > MAX_SIMILARITY_INDEX) {
-                DuplicateCodeOccurrence duplicatedCode(DUPLICATED_CODE, similarityIndex, functionOneString, functionTwoString);
+                DuplicateCodeOccurrence duplicatedCode(DUPLICATED_CODE, similarityIndex, functionOneName, functionTwoName);
                 duplicatedCodeOccurrences.push_back(duplicatedCode);
             }
         }
