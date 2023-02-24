@@ -8,7 +8,6 @@
 #include <sstream>
 #include <iostream>
 #include <stack>
-#include <unordered_set>
 #include <climits>
 using namespace std;
 
@@ -22,12 +21,100 @@ CodeSmellDetector::CodeSmellDetector(const string &fileName, const vector<string
     this->linesFromFile = linesFromFile;
     this->linesFromFile.insert(this->linesFromFile.begin(), "SKIP INDEX 0");
     this->lineCount = (int) linesFromFile.size();
+
     extractFunctions();
     detectLongMethod();
     detectLongParameterList();
     detectDuplicatedCode();
+
     for (const Function &function : this->functionList) {
         this->functionNames.push_back(function.getName());
+    }
+}
+
+void CodeSmellDetector::extractFunctions() {
+    int currentLineNumber = 1;
+    int openParenLineNumber = 1;
+    int openCurlyLineNumber = 1;
+
+    while (currentLineNumber < lineCount) {
+        skipBlankLines(currentLineNumber);
+
+        // Skip lines till we reach a function header which has an open paren
+        skipLinesUntilFunctionHeader(currentLineNumber);
+        openParenLineNumber = currentLineNumber;
+
+        // Skip lines till we reach the line with the opening curly bracket
+        skipLinesUntilOpeningCurlyBracket(currentLineNumber);
+        openCurlyLineNumber = currentLineNumber;
+
+        cout << "paren: " << openParenLineNumber;
+        cout << "curly: " << openCurlyLineNumber;
+
+        string line = linesFromFile[currentLineNumber];
+        int endLineNumber = findFunctionClosingCurlyBracket(line, openCurlyLineNumber);
+
+        cout << "\nstart line number: " << openParenLineNumber << endl;
+        cout << "end line number: " << endLineNumber << endl;
+
+        vector<string> functionContent;
+        extractFunctionContent(functionContent, openParenLineNumber, endLineNumber);
+
+        Function function(functionContent, openParenLineNumber, openCurlyLineNumber, endLineNumber);
+        functionList.push_back(function);
+
+        currentLineNumber = (openParenLineNumber == endLineNumber) ? endLineNumber + 1 : endLineNumber;
+    }
+}
+
+void CodeSmellDetector::skipBlankLines(int &currentLineNumber) {
+    while (currentLineNumber < lineCount && linesFromFile[currentLineNumber].empty()) {
+        currentLineNumber++;
+    }
+}
+
+void CodeSmellDetector::skipLinesUntilFunctionHeader(int &currentLineNumber) {
+    while (currentLineNumber < lineCount &&
+           !containsCharacter(linesFromFile[currentLineNumber], CodeSmellDetector::OPENING_PAREN)) {
+        currentLineNumber++;
+    }
+}
+
+void CodeSmellDetector::skipLinesUntilOpeningCurlyBracket(int &currentLineNumber) {
+    while (currentLineNumber < lineCount &&
+           !containsCharacter(linesFromFile[currentLineNumber], CodeSmellDetector::OPENING_CURLY_BRACKET)) {
+        currentLineNumber++;
+    }
+}
+
+bool CodeSmellDetector::containsCharacter(const string &str, const char &character) {
+    return str.find(character) != string::npos;
+}
+
+int CodeSmellDetector::findFunctionClosingCurlyBracket(const string &startLine, int lineNumber) {
+    stack<char> openCurlyBrackets;
+
+    for (size_t i = lineNumber; i < this->linesFromFile.size(); i++) {
+        for (const char &currentChar : this->linesFromFile[i]) {
+            if (currentChar == CodeSmellDetector::OPENING_CURLY_BRACKET) {
+                openCurlyBrackets.push(currentChar);
+            } else if (currentChar == CodeSmellDetector::CLOSING_CURLY_BRACKET) {
+                if (openCurlyBrackets.size() == 1) {
+                    return i;
+                } else if (!openCurlyBrackets.empty()) {
+                    openCurlyBrackets.pop();
+                }
+            }
+        }
+    }
+
+    return -1;
+}
+
+void CodeSmellDetector::extractFunctionContent(vector<string> &functionContent, int startLineNumber, int endLineNumber) {
+    for (int i = startLineNumber; i <= endLineNumber; i++) {
+        functionContent.push_back(linesFromFile[i]);
+        cout << linesFromFile[i] << endl;
     }
 }
 
@@ -55,7 +142,10 @@ void CodeSmellDetector::detectDuplicatedCode() {
     int size = (int) functionList.size();
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size - 1; j++) {
-            if (j == i) continue;
+            if (j == i) {
+                continue;
+            }
+
             string functionOneString = functionList[i].getCodeString();
             string functionTwoString = functionList[j].getCodeString();
             double similarityIndex = calculateSimilarityIndex(functionOneString, functionTwoString);
@@ -67,161 +157,6 @@ void CodeSmellDetector::detectDuplicatedCode() {
         }
     }
 }
-
-bool CodeSmellDetector::containsCharacter(string str, const char &character) {
-    return str.find(character) != string::npos;
-}
-
-int CodeSmellDetector::findLineNumberWithClosingCurlyBracket(const string &startLine, int lineNumber) {
-    stack<char> openCurlyBrackets;
-
-    for (size_t i = lineNumber; i < this->linesFromFile.size(); i++) {
-        for (const char &currentChar : this->linesFromFile[i]) {
-            if (currentChar == CodeSmellDetector::OPENING_CURLY_BRACKET) {
-                openCurlyBrackets.push(currentChar);
-            } else if (currentChar == CodeSmellDetector::CLOSING_CURLY_BRACKET) {
-                if (openCurlyBrackets.size() == 1) {
-                    return i;
-                } else if (!openCurlyBrackets.empty()) {
-                    openCurlyBrackets.pop();
-                }
-            }
-        }
-    }
-
-    return -1;
-}
-
-void CodeSmellDetector::extractFunctions() {
-    int currentLineNumber = 1;
-    int parenOpenLineNumber = 1;
-    int curlyOpenLineNumber = 1;
-
-
-
-    while (currentLineNumber < lineCount) {
-        while (currentLineNumber < lineCount && (linesFromFile[currentLineNumber].empty())) {
-            currentLineNumber++;
-        }
-//        while (currentLineNumber < lineCount &&
-//                 linesFromFile[currentLineNumber].empty() ||
-//                (!containsCharacter(linesFromFile[currentLineNumber], '/') ||
-//                 !containsCharacter(linesFromFile[currentLineNumber], '*')) ) {
-//            currentLineNumber++;
-//        }
-
-
-        while (currentLineNumber < lineCount &&
-               !containsCharacter(linesFromFile[currentLineNumber], CodeSmellDetector::OPENING_PAREN)) {
-            currentLineNumber++;
-        }
-        parenOpenLineNumber = currentLineNumber;
-
-        while (currentLineNumber < lineCount &&
-               !containsCharacter(linesFromFile[currentLineNumber], CodeSmellDetector::OPENING_CURLY_BRACKET)) {
-            currentLineNumber++;
-        }
-        curlyOpenLineNumber = currentLineNumber;
-        cout << "paren: " << parenOpenLineNumber;
-        cout << "curly: " << curlyOpenLineNumber;
-
-
-        string line = linesFromFile[currentLineNumber];
-        int endLineNumber = findLineNumberWithClosingCurlyBracket(line, curlyOpenLineNumber);
-        cout << "\nstart line number: " << parenOpenLineNumber << endl;
-        cout << "end line number: " << endLineNumber << endl;
-
-        vector<string> functionContent;
-        for (int i = parenOpenLineNumber; i <= endLineNumber; i++) {
-            functionContent.push_back(linesFromFile[i]);
-            cout << linesFromFile[i] << endl;
-        }
-        Function function(functionContent, parenOpenLineNumber, curlyOpenLineNumber, endLineNumber);
-        functionList.push_back(function);
-
-        currentLineNumber = (parenOpenLineNumber == endLineNumber) ? endLineNumber + 1 : endLineNumber;
-    }
-
-
-//    //////////////////////////////////////
-//    struct StartEndPair {
-//        int startLine;
-//        int endLine;
-//        StartEndPair(int startLine, int endLine) {
-//            this->startLine = startLine;
-//            this->endLine = endLine;
-//        }
-//    };
-//
-//    struct Line {
-//        vector<string> tokens;
-//        string line;
-//        int number;
-//    };
-//
-//    vector<StartEndPair> startEndPairs;
-//
-//
-//
-//    for (int startLineNumber = 1; startLineNumber < linesFromFile.size(); startLineNumber++) {
-//        string startLine = linesFromFile[startLineNumber];
-//        vector<string> tokens;
-//        istringstream iss(startLine);
-//        string token;
-//
-//        Line line;
-//        line.line = startLine;
-//        line.number = startLineNumber;
-//
-//        while (iss >> token) {
-//            line.tokens.push_back(token);
-//            if (containsCharacter(token, OPENING_CURLY_BRACKET)) {
-//                int endLineNumber = findLineNumberWithClosingCurlyBracket(startLine, startLineNumber);
-//                StartEndPair pair = StartEndPair(startLineNumber, endLineNumber);
-//                startEndPairs.push_back(pair);
-//                cout << "\nstart line number: " << startLineNumber << endl;
-//                cout << "end line number: " << endLineNumber << endl;
-//
-//                // Not a bracket enclosed statement like if, loop, etc.
-//                if (BRACKET_ENCLOSED_STATEMENTS.find(line.tokens[0]) == BRACKET_ENCLOSED_STATEMENTS.end()) {
-//                    vector<string> functionContent;
-//                    for (int i = startLineNumber; i <= endLineNumber; i++) {
-//                        functionContent.push_back(linesFromFile[i]);
-//                        cout << linesFromFile[i] << endl;
-//                    }
-//                    Function function(functionContent, "function", endLineNumber - startLineNumber);
-//
-//                }
-//            }
-//            cout << startLineNumber << " TOKEN:[" << token << "] ";
-//        }
-//        cout << endl;
-//    }
-
-//    int maxDiff = INT_MIN;
-//    //int functionStartLine = -1;
-//   // int functionEndLine = -1;
-//    for (StartEndPair pair : startEndPairs) {
-//        int diff = pair.startLine - pair.endLine;
-//        if (diff > maxDiff) {
-//            diff = maxDiff;
-//            functionStartLine = pair.startLine;
-//            functionEndLine = pair.endLine;
-//        }
-//    }
-
-
-
-
-}
-
-vector<string> CodeSmellDetector::getFunctionNames() {
-    return functionNames;
-}
-
-
-
-
 
 double CodeSmellDetector::calculateSimilarityIndex(string stringOne, string stringTwo) {
 //    double similarityIndex;
@@ -264,6 +199,10 @@ double CodeSmellDetector::calculateSimilarityIndex(string stringOne, string stri
     return (double) commonCharacters / totalCharactersSeen;
 }
 
+vector<string> CodeSmellDetector::getFunctionNames() {
+    return functionNames;
+}
+
 vector<CodeSmellDetector::LongParameterListOccurrence> CodeSmellDetector::getLongParameterListOccurrences() const {
     return longParameterListOccurences;
 }
@@ -285,4 +224,30 @@ string CodeSmellDetector::smellTypeToString(CodeSmellDetector::SmellType type) {
         return "Duplicated Code";
     else
         return "Bad type";
+}
+
+
+bool CodeSmellDetector::hasLongMethodSmell() const {
+    return !longMethodOccurences.empty();
+}
+
+bool CodeSmellDetector::hasLongParameterListSmell() const {
+    return !longParameterListOccurences.empty();
+}
+
+bool CodeSmellDetector::hasDuplicateCodeSmell() const {
+    return !duplicatedCodeOccurrences.empty();
+}
+
+bool CodeSmellDetector::hasSmell(CodeSmellDetector::SmellType smellType) const {
+    if (smellType == SmellType::LONG_METHOD) {
+        return !longMethodOccurences.empty();
+    } else if (smellType == SmellType::LONG_PARAMETER_LIST) {
+        return !longParameterListOccurences.empty();
+    } else if (smellType == SmellType::DUPLICATED_CODE) {
+        return !duplicatedCodeOccurrences.empty();
+    } else {
+        throw invalid_argument("Unknown smell type");
+    }
+
 }

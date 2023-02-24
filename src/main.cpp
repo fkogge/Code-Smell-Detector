@@ -6,45 +6,24 @@
 
 using namespace std;
 
-class Hey {
-public:
-    Hey() {
-        cout << "hey" << endl;
-    }
-    void hi() {
-        cout << "hi" << endl;
-        what();
-    }
-
-
-private:
-    void what() {
-        cout << "what" << endl;
-    }
-};
-
 const int LONG_METHOD_OPTION = 1;
 const int LONG_PARAMETER_LIST_OPTION = 2;
 const int DUPLICATED_CODE_DETECTION_OPTION = 3;
 const int QUIT_OPTION = 4;
 
 void printIntro();
-void fillFileNames(vector<string> &fileNames, int argCount, char *cmdLineArgs[]);
 bool fillFileContents(vector<string> &fileContents, const string &filename);
 bool invalidFileExtension(const string &filename);
-void fillCodeSmellDetectorList(vector<CodeSmellDetector> &codeSmellDetectorList, const vector<vector<string>> &fileContents);
 void displayMainMenu(CodeSmellDetector codeSmellDetector);
 string selectMenuOption();
 bool isValidOption(string userInput);
 
+void printFunctionNames(const vector<string> &functionNames);
 void printLongMethodInfo(const CodeSmellDetector &detector);
 void printLongParameterListInfo(const CodeSmellDetector &codeSmellDetector);
 void printDuplicatedCodeInfo(const CodeSmellDetector &codeSmellDetector);
 
 int main(int argc, char *argv[]) {
-    Hey hey;
-    hey.hi();
-    //const int QUIT = 4;
     printIntro();
 
     string filename = argv[1];
@@ -58,18 +37,14 @@ int main(int argc, char *argv[]) {
     }
 
     vector<CodeSmellDetector> codeSmellDetectorList;
-    //fillCodeSmellDetectorList(codeSmellDetectorList, fileContents);
     CodeSmellDetector codeSmellDetector(filename, fileContents);
 
     vector<string> functionNameList = codeSmellDetector.getFunctionNames();
-    cout << "The file you provided contains the following methods: " << endl;
-    for (const string &functionName : functionNameList) {
-        cout << "\t-> " << functionName << endl;
-    }
+    printFunctionNames(functionNameList);
 
-    int option = -1;
+    int option;
     string userInput;
-    while (option != QUIT_OPTION) {
+    do {
         do {
             displayMainMenu(codeSmellDetector);
             userInput = selectMenuOption();
@@ -85,17 +60,23 @@ int main(int argc, char *argv[]) {
         } else if (option != QUIT_OPTION) {
             cout << "Invalid option. Please try again.";
         }
-    }
+    } while (option != QUIT_OPTION);
 
 
     return 0;
 }
 
+void printFunctionNames(const vector<string> &functionNames) {
+    cout << "The file you provided contains the following methods: " << endl;
+    for (const string &name : functionNames) {
+        cout << "\t-> " << name << endl;
+    }
+}
+
 void printLongMethodInfo(const CodeSmellDetector &detector) {
     vector<CodeSmellDetector::LongMethodOccurrence> longMethodOccurences = detector.getLongMethodOccurrences();
-    bool hasLongMethodSmell = !longMethodOccurences.empty();
 
-    if (hasLongMethodSmell) {
+    if (detector.hasLongMethodSmell()) {
         for (CodeSmellDetector::LongMethodOccurrence occurence : longMethodOccurences) {
             cout << "The " << occurence.functionName
                  << " function is a " << CodeSmellDetector::smellTypeToString(occurence.type)
@@ -110,9 +91,8 @@ void printLongMethodInfo(const CodeSmellDetector &detector) {
 void printLongParameterListInfo(const CodeSmellDetector &codeSmellDetector) {
     vector<CodeSmellDetector::LongParameterListOccurrence> longParameterListOccurrences =
             codeSmellDetector.getLongParameterListOccurrences();
-    bool hasLongParameterListSmell = !longParameterListOccurrences.empty();
 
-    if (hasLongParameterListSmell) {
+    if (codeSmellDetector.hasLongParameterListSmell()) {
         for (CodeSmellDetector::LongParameterListOccurrence occurence : longParameterListOccurrences) {
             cout << "The " << occurence.functionName
                  << " function has a " << CodeSmellDetector::smellTypeToString(occurence.type)
@@ -127,9 +107,8 @@ void printLongParameterListInfo(const CodeSmellDetector &codeSmellDetector) {
 void printDuplicatedCodeInfo(const CodeSmellDetector &codeSmellDetector) {
     vector<CodeSmellDetector::DuplicateCodeOccurrence> duplicatedCodeOccurrences =
             codeSmellDetector.getDuplicateCodeOccurrences();
-    bool hasDuplicatedCodeSmell = !duplicatedCodeOccurrences.empty();
 
-    if (hasDuplicatedCodeSmell) {
+    if (codeSmellDetector.hasDuplicateCodeSmell()) {
         for (CodeSmellDetector::DuplicateCodeOccurrence occurrence : duplicatedCodeOccurrences) {
             cout << "The functions " << occurrence.functionNames.first << " and " << occurrence.functionNames.second
                  << " are duplicated. Their similarity percentage is " << occurrence.similarityIndex * 100
@@ -144,12 +123,6 @@ void printIntro() {
     cout << "Welcome to the Code Smell Detector program!" << endl;
     cout << "By Francis Kogge" << endl;
     cout << endl;
-}
-
-void fillFileNames(vector<string> &fileNames, int argCount, char *cmdLineArgs[]) {
-    for (int i = 1; i < argCount; i++) {
-        fileNames.push_back(cmdLineArgs[i]);
-    }
 }
 
 bool fillFileContents(vector<string> &fileContents, const string& filename) {
@@ -170,16 +143,7 @@ bool fillFileContents(vector<string> &fileContents, const string& filename) {
     return true;
 }
 
-void fillCodeSmellDetectorList(vector<CodeSmellDetector> &codeSmellDetectorList, const vector<vector<string>> &fileContents) {
-    for (const auto &linesFromFile : fileContents) {
-        CodeSmellDetector codeSmellDetector("x", linesFromFile);
-        codeSmellDetectorList.push_back(codeSmellDetector);
-    }
-}
-
 void displayMainMenu(CodeSmellDetector codeSmellDetector) {
-
-
     cout << "\nPlease choose one of the following options: " << endl;
     cout << LONG_METHOD_OPTION << ". Long Method/Function Detection" << endl;
     cout << LONG_PARAMETER_LIST_OPTION << ". Long Parameter List Detection" << endl;
@@ -195,7 +159,7 @@ bool isValidOption(string userInput) {
         cout << "caught invalid input [" << userInput << "]: " << e.what() << endl;
         return false;
     }
-
+    // TODO: verify not double
     return option >= LONG_METHOD_OPTION && option <= QUIT_OPTION;
 }
 

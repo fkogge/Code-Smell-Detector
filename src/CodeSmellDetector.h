@@ -16,7 +16,6 @@ using namespace std;
 class CodeSmellDetector {
 
 public:
-
     enum SmellType {
         LONG_METHOD, LONG_PARAMETER_LIST, DUPLICATED_CODE
     };
@@ -63,6 +62,10 @@ public:
     vector<LongMethodOccurrence> getLongMethodOccurrences() const;
     vector<LongParameterListOccurrence> getLongParameterListOccurrences() const;
     vector<DuplicateCodeOccurrence> getDuplicateCodeOccurrences() const;
+    bool hasLongMethodSmell() const;
+    bool hasLongParameterListSmell() const;
+    bool hasDuplicateCodeSmell() const;
+    bool hasSmell(SmellType smellType) const;
     static string smellTypeToString(SmellType type);
 
 private:
@@ -85,13 +88,17 @@ private:
     vector<Function> functionList;
     vector<string> functionNames;
 
+    void skipBlankLines(int &currentLineNumber);
+    void skipLinesUntilFunctionHeader(int &currentLineNumber);
+    void skipLinesUntilOpeningCurlyBracket(int &currentLineNumber);
+    int findFunctionClosingCurlyBracket(const string &startLine, int lineNumber);
+    void extractFunctionContent(vector<string> &functionContent, int startLineNumber, int endLineNumber);
     void extractFunctions();
     void detectLongMethod();
     void detectLongParameterList();
     void detectDuplicatedCode();
-    bool containsCharacter(string str, const char &character);
+    static bool containsCharacter(const string &str, const char &character);
     double calculateSimilarityIndex(string stringOne, string stringTwo);
-    int findLineNumberWithClosingCurlyBracket(const string &startLine, int lineNumber);
 };
 
 

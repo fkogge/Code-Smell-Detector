@@ -28,6 +28,7 @@ private:
     string transformToCodeString();
     int extractParameterCount();
     string getFunctionHeader() const;
+
 };
 
 
