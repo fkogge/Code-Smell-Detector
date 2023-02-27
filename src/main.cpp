@@ -3,6 +3,8 @@
 #include <vector>
 #include <fstream>
 #include "CodeSmellDetector.h"
+#include <csignal>
+#include <algorithm>
 
 using namespace std;
 
@@ -17,7 +19,6 @@ bool invalidFileExtension(const string &filename);
 void displayMainMenu();
 string selectMenuOption();
 bool isValidOption(string userInput);
-void validateUserInput();
 void run(const CodeSmellDetector &codeSmellDetector);
 
 void printFunctionNames(const vector<string> &functionNames);
@@ -26,6 +27,8 @@ void printLongParameterListInfo(const CodeSmellDetector &codeSmellDetector);
 void printDuplicatedCodeInfo(const CodeSmellDetector &codeSmellDetector);
 
 int main(int argc, char *argv[]) {
+    // Handle error when resizing terminal window, ok to just ignore signal
+    signal(SIGWINCH, SIG_IGN);
     printIntro();
 
     if (argc != 2) {
@@ -140,10 +143,10 @@ void displayMainMenu() {
 }
 
 void run(const CodeSmellDetector &codeSmellDetector) {
-    int option;
+    int option = -1;
     string userInput;
 
-    do {
+    while (option != QUIT_OPTION) {
         do {
             displayMainMenu();
             userInput = selectMenuOption();
@@ -158,7 +161,7 @@ void run(const CodeSmellDetector &codeSmellDetector) {
         } else if (option == DUPLICATED_CODE_DETECTION_OPTION) {
             printDuplicatedCodeInfo(codeSmellDetector);
         }
-    } while (option != QUIT_OPTION);
+    }
 }
 
 bool isValidOption(string userInput) {
@@ -190,8 +193,7 @@ bool isValidOption(string userInput) {
 string selectMenuOption() {
     string option;
     cout << "> ";
-    cin >> option;
-    cin.ignore();
+    getline(cin, option);
     cout << endl;
     return option;
 }
