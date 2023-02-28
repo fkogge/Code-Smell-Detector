@@ -158,7 +158,7 @@ void CodeSmellDetector::detectDuplicatedCode() {
             Function secondFunction = functionList[j];
             vector<string> firstFuncBody = firstFunction.getFunctionBody();
             vector<string> secondFuncBody = secondFunction.getFunctionBody();
-
+            cout << "comparing " << firstFunction.getName() << " and " << secondFunction.getName() << endl;
             double similarityIndex = jaccardTokenSimilarityIndex(firstFuncBody, secondFuncBody);
             //double similarityIndex = jaccardBiGramSimilarityIndex(firstFunction.getCodeString(), secondFunction.getCodeString());
             //double similarityIndex = jaccardLineSimilarityIndex(firstFuncBody, secondFuncBody);
@@ -182,6 +182,7 @@ void CodeSmellDetector::detectDuplicatedCode() {
 double CodeSmellDetector::jaccardTokenSimilarityIndex(vector<string> firstFunctionBody, vector<string> secondFunctionBody) {
     unordered_map<string, int> firstUniqueTokens;
     unordered_map<string, int> secondUniqueTokens;
+    unordered_map<string, int> tokensInBoth;
 
 
     int matchingTokens = 0;
@@ -213,10 +214,14 @@ double CodeSmellDetector::jaccardTokenSimilarityIndex(vector<string> firstFuncti
         auto matchingTokenEntry = secondUniqueTokens.find(firstTokenEntry.first);
         // if found matching entry
         if (matchingTokenEntry != secondUniqueTokens.end()) {
+            tokensInBoth.insert({firstTokenEntry.first, firstTokenEntry.second + matchingTokenEntry->second});
             matchingTokens += firstTokenEntry.second + matchingTokenEntry->second;
         }
     }
-
+    cout << "token in both (intersection): " << endl;
+    for (const auto& entry : tokensInBoth) {
+        cout << "{" << entry.first << " : " << entry.second << "}" << endl;
+    }
     // observations in either
     for (const auto &tokenEntry : allUniqueTokens) {
         totalTokens += tokenEntry.second;
