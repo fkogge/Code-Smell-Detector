@@ -50,10 +50,12 @@ void CodeSmellDetector::extractFunctions() {
         string line = linesFromFile[currentLineNumber];
         size_t endLineNumber = findFunctionClosingCurlyBracketLine(openCurlyLineNumber);
 
+        // Now create the function object
         vector<string> functionContent;
         extractFunctionContent(functionContent, openParenLineNumber, endLineNumber);
         Function function(functionContent);
         functionList.push_back(function);
+
 
         currentLineNumber = (openParenLineNumber == endLineNumber) ? endLineNumber + 1 : endLineNumber;
     }
@@ -67,7 +69,10 @@ void CodeSmellDetector::skipBlankLines(size_t &currentLineNumber) {
 
 void CodeSmellDetector::skipLinesUntilFunctionHeader(size_t &currentLineNumber) {
     while (currentLineNumber < lineCount &&
-           !containsCharacter(linesFromFile[currentLineNumber], CodeSmellDetector::OPENING_PAREN)) {
+            (!containsCharacter(linesFromFile[currentLineNumber], CodeSmellDetector::OPENING_PAREN)
+            //|| containsCharacter(linesFromFile[currentLineNumber], ';') TODO: do I need this check?
+            )
+        ) {
         currentLineNumber++;
     }
 }

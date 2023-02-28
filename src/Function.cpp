@@ -101,8 +101,19 @@ vector<string> Function::getFunctionBody() const {
     size_t bodyStartLine = (codeLines[FIRST_LINE].find(OPENING_CURLY_BRACKET) != string::npos) ? 1 : 2;
 
     vector<string> functionBody;
-    for (size_t i = bodyStartLine; i < numLinesOfCode - 1; i++) {
-        functionBody.push_back(codeLines[i]);
+
+    // If function is defined and written in one line
+    if (numLinesOfCode == 1) {
+        string line = codeLines[FIRST_LINE];
+        size_t openCurlyIndex = line.find_first_of('{');
+        size_t closingCurlyIndex = line.find_last_of('}');
+        string body = line.substr(openCurlyIndex + 1, closingCurlyIndex - openCurlyIndex - 1);
+        functionBody.push_back(body);
+    } else {
+        for (size_t i = bodyStartLine; i < numLinesOfCode - 1; i++) {
+            functionBody.push_back(codeLines[i]);
+        }
     }
+
     return functionBody;
 }
