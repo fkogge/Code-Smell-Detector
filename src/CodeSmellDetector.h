@@ -94,7 +94,7 @@ private:
      * the sum of the counts of all unique tokens seen across either function. This will provide a more accurate
      * calculation of whether the two functions are duplicated.
      */
-    static double jaccardTokenSimilarityIndex(vector<string> firstFunctionBody, vector<string> secondFunctionBody);
+    static double jaccardTokenSimilarityIndex(const vector<string> &firstFunctionBody, const vector<string> &secondFunctionBody);
 
     void skipBlankLines(size_t &currentLineNumber);
     void skipLinesUntilFunctionHeader(size_t &currentLineNumber);

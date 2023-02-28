@@ -89,22 +89,26 @@ bool CodeSmellDetector::containsCharacter(const string &str, const char &charact
 }
 
 size_t CodeSmellDetector::findFunctionClosingCurlyBracketLine(size_t startLineNumber) {
-    stack<char> openCurlyBrackets;
+    // Pseudo-stack (don't actually need stack since
+    // we're not doing anything with the brackets)
+    size_t openCurlyCount = 0;
 
     for (size_t currentLineNumber = startLineNumber; currentLineNumber < linesFromFile.size(); currentLineNumber++) {
         for (const char &currentChar : linesFromFile[currentLineNumber]) {
             if (currentChar == CodeSmellDetector::OPENING_CURLY_BRACKET) {
-                openCurlyBrackets.push(currentChar);
+                openCurlyCount++; // Push stack
             } else if (currentChar == CodeSmellDetector::CLOSING_CURLY_BRACKET) {
-                if (openCurlyBrackets.size() == 1) {
+                if (openCurlyCount == 1) {
+                    // Found matching bracket
                     return currentLineNumber;
-                } else if (!openCurlyBrackets.empty()) {
-                    openCurlyBrackets.pop();
+                } else if (openCurlyCount > 0) {
+                    openCurlyCount--; // Pop stack
                 }
             }
         }
     }
 
+    // Should never reach here if input file is valid syntax
     return -1;
 }
 
@@ -218,7 +222,7 @@ double CodeSmellDetector::jaccardBiGramSimilarityIndex(string firstCodeString, s
 }
 
 
-double CodeSmellDetector::jaccardTokenSimilarityIndex(vector<string> firstFunctionBody, vector<string> secondFunctionBody) {
+double CodeSmellDetector::jaccardTokenSimilarityIndex(const vector<string> &firstFunctionBody, const vector<string> &secondFunctionBody) {
     unordered_map<string, int> firstUniqueTokens;
     unordered_map<string, int> secondUniqueTokens;
     unordered_map<string, int> allUniqueTokens;
