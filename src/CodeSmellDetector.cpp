@@ -110,7 +110,6 @@ void CodeSmellDetector::extractFunctionContent(vector<string> &functionContent, 
             continue;
         }
         functionContent.push_back(linesFromFile[i]);
-        cout << linesFromFile[i] << endl;
     }
 }
 
@@ -156,16 +155,9 @@ void CodeSmellDetector::detectDuplicatedCode() {
 
             Function firstFunction = functionList[i];
             Function secondFunction = functionList[j];
-            vector<string> firstFuncBody = firstFunction.getFunctionBody();
-            vector<string> secondFuncBody = secondFunction.getFunctionBody();
 
-            double similarityIndex = jaccardTokenSimilarityIndex(firstFuncBody, secondFuncBody);
-            //double similarityIndex = jaccardBiGramSimilarityIndex(firstFunction.getCodeString(), secondFunction.getCodeString());
-            //double similarityIndex = jaccardLineSimilarityIndex(firstFuncBody, secondFuncBody);
-            //double similarityIndex = jaccardSimilarityIndex(firstFunction.getCodeString(), secondFunction.getCodeString());
-
-//            cout << "similarity index for " << functionOneName << " and " << functionTwoName << ": " << similarityIndex << endl;
-
+            double similarityIndex = jaccardTokenSimilarityIndex(firstFunction.getFunctionBody(),
+                                                                 secondFunction.getFunctionBody());
             if (similarityIndex > MAX_SIMILARITY_INDEX) {
                 DuplicatedCode duplicatedCode(
                         DUPLICATED_CODE,
@@ -182,48 +174,28 @@ void CodeSmellDetector::detectDuplicatedCode() {
 double CodeSmellDetector::jaccardTokenSimilarityIndex(vector<string> firstFunctionBody, vector<string> secondFunctionBody) {
     unordered_map<string, int> firstUniqueTokens;
     unordered_map<string, int> secondUniqueTokens;
-
-
+    unordered_map<string, int> allUniqueTokens;
     int matchingTokens = 0;
     int totalTokens = 0;
 
     computeFunctionTokenCounts(firstFunctionBody, firstUniqueTokens);
-
-    cout << "first function unique tokens: " << endl;
-    for (const auto& entry : firstUniqueTokens) {
-        cout << "{" << entry.first << " : " << entry.second << "}" << endl;
-    }
-
     computeFunctionTokenCounts(secondFunctionBody, secondUniqueTokens);
+    allUniqueTokens = getAllUniqueTokenCounts(firstUniqueTokens, secondUniqueTokens);
 
-    cout << "second function unique tokens: " << endl;
-    for (const auto& entry : secondUniqueTokens) {
-        cout << "{" << entry.first << " : " << entry.second << "}" << endl;
-    }
-
-    unordered_map<string, int> allUniqueTokens = getAllUniqueTokenCounts(firstUniqueTokens, secondUniqueTokens);
-
-    cout << "all unique tokens: " << endl;
-    for (const auto& entry : allUniqueTokens) {
-        cout << "{" << entry.first << " : " << entry.second << "}" << endl;
-    }
-
-    // observations in both
+    // Token counts in both functions
     for (const auto &firstTokenEntry : firstUniqueTokens) {
         auto matchingTokenEntry = secondUniqueTokens.find(firstTokenEntry.first);
-        // if found matching entry
+        // If found matching token
         if (matchingTokenEntry != secondUniqueTokens.end()) {
             matchingTokens += firstTokenEntry.second + matchingTokenEntry->second;
         }
     }
 
-    // observations in either
+    // Total token counts in either function
     for (const auto &tokenEntry : allUniqueTokens) {
         totalTokens += tokenEntry.second;
     }
 
-    double simIndex = (double) matchingTokens / totalTokens;
-    cout << "sim index: " << matchingTokens << " / " << totalTokens << " = " << simIndex << endl;
     return (double) matchingTokens / totalTokens;
 }
 
@@ -237,8 +209,6 @@ void CodeSmellDetector::computeFunctionTokenCounts(const vector<string> &functio
             if (tokenEntry == tokenCounts.end()) {
                 tokenCounts.insert({token, 1});
             } else {
-//                int count = secondUniqueTokens.at(token);
-//                cout << "count: " << count << endl;
                 tokenEntry->second++;
             }
         }
@@ -248,6 +218,7 @@ void CodeSmellDetector::computeFunctionTokenCounts(const vector<string> &functio
 unordered_map<string, int>
 CodeSmellDetector::getAllUniqueTokenCounts(const unordered_map<string, int> &firstFunctionTokens,
                                            const unordered_map<string, int> &secondFunctionTokens) {
+
     unordered_map<string, int> allUniqueTokens(firstFunctionTokens);
 
     for (const auto& secondTokenEntry : secondFunctionTokens) {
@@ -265,125 +236,6 @@ CodeSmellDetector::getAllUniqueTokenCounts(const unordered_map<string, int> &fir
     }
 
     return allUniqueTokens;
-}
-
-
-
-double CodeSmellDetector::jaccardSimilarityIndex(string firstCodeString, string secondCodeString) {
-    unordered_set<char> firstUniqueChars;
-    unordered_set<char> secondUniqueChars;
-    unordered_set<char> allUniqueChars;
-    int intersection = 0;
-    cout << "First code: " << firstCodeString << endl;
-    for (const char &c : firstCodeString) {
-        firstUniqueChars.insert(c);
-        allUniqueChars.insert(c);
-    }
-    for (const char &c : secondCodeString) {
-        secondUniqueChars.insert(c);
-        allUniqueChars.insert(c);
-    }
-
-    cout << "intersection: " << endl;
-    for (const char &c : firstUniqueChars) {
-        if (secondUniqueChars.find(c) != secondUniqueChars.end()) {
-            intersection++;
-            cout << c;
-        }
-    }
-    cout << endl;
-
-    cout << "First unique: " << endl;
-    for (const char &c : firstUniqueChars) {
-        cout << c << ", ";
-    }
-    cout << endl;
-
-    cout << "second unique: " << endl;
-    for (const char &c : secondUniqueChars) {
-        cout << c << ", ";
-    }
-    cout << endl;
-
-    cout << "all unique: " << endl;
-    for (const char &c : allUniqueChars) {
-        cout << c << ", ";
-    }
-    cout << endl;
-
-    return (double) intersection / allUniqueChars.size();
-
-
-}
-
-double CodeSmellDetector::jaccardBiGramSimilarityIndex(string firstCodeString, string secondCodeString) {
-    vector<string> firstBigrams;
-    vector<string> secondBigrams;
-
-    // FIXME: ignore carriage returns?
-    cout << firstCodeString << " bigrams: " << endl;
-    for (int i = 0; i < firstCodeString.size() - 1; i++) {
-        stringstream bigram;
-        bigram << firstCodeString[i] << firstCodeString[i + 1];
-        firstBigrams.push_back(bigram.str());
-        cout << firstBigrams[i] << endl;
-    }
-
-    cout << secondCodeString << " bigrams: " << endl;
-    for (int i = 0; i < secondCodeString.size() - 1; i++) {
-        stringstream bigram;
-        bigram << secondCodeString[i] << secondCodeString[i + 1];
-        secondBigrams.push_back(bigram.str());
-        cout << secondBigrams[i] << " " << endl;
-    }
-
-    int matchingTokens = 0;
-    for (const string &token : firstBigrams) {
-        // If token from function one is also in function two
-        if (find(secondBigrams.begin(), secondBigrams.end(), token) != secondBigrams.end()) {
-            matchingTokens++;
-        }
-    }
-
-    vector<string> tokensInEither;
-    for (const string &token : firstBigrams) {
-        tokensInEither.push_back(token);
-    }
-    for (const string &token : secondBigrams) {
-        // If unique token from function two has not been recorded yet
-        if (find(tokensInEither.begin(), tokensInEither.end(), token) == tokensInEither.end()) {
-            tokensInEither.push_back(token);
-        }
-    }
-    cout << "matching: " << matchingTokens << endl;
-    cout << "tokens in either: " << tokensInEither.size() << endl;
-    cout << "sim index: " << static_cast<double>(matchingTokens) / static_cast<double>(tokensInEither.size()) << endl;
-    return static_cast<double>(matchingTokens) / static_cast<double>(tokensInEither.size());
-}
-
-double CodeSmellDetector::jaccardLineSimilarityIndex(vector<string> functionOneBody, vector<string> functionTwoBody) {
-    int matchingTokens = 0;
-    for (const string &token : functionOneBody) {
-        // If token from function one is also in function two
-        if (find(functionTwoBody.begin(), functionTwoBody.end(), token) != functionTwoBody.end()) {
-            matchingTokens++;
-        }
-    }
-
-    vector<string> tokensInEither;
-    for (const string &token : functionOneBody) {
-        tokensInEither.push_back(token);
-    }
-    for (const string &token : functionTwoBody) {
-        // If unique token from function two has not been recorded yet
-        if (find(tokensInEither.begin(), tokensInEither.end(), token) == tokensInEither.end()) {
-            tokensInEither.push_back(token);
-        }
-    }
-    cout << "matching: " << matchingTokens << endl;
-    cout << "tokens in either: " << tokensInEither.size() << endl;
-    cout << "sim index: " << static_cast<double>(matchingTokens) / static_cast<double>(tokensInEither.size()) << endl;
-    return static_cast<double>(matchingTokens) / static_cast<double>(tokensInEither.size());
 }
 
 vector<string> CodeSmellDetector::getFunctionNames() {

@@ -86,7 +86,7 @@ private:
     string fileName;
     vector<Function> functionList;
     vector<string> functionNames;
-
+    
     void skipBlankLines(size_t &currentLineNumber);
     void skipLinesUntilFunctionHeader(size_t &currentLineNumber);
     void skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumber);
@@ -98,10 +98,7 @@ private:
     void detectDuplicatedCode();
     static bool containsCharacter(const string &str, const char &character);
     static pair<size_t, size_t> getSortedPair(size_t first, size_t second);
-    double jaccardLineSimilarityIndex(vector<string> functionOneBody, vector<string> functionTwoBody);
     double jaccardTokenSimilarityIndex(vector<string> firstFunctionBody, vector<string> secondFunctionBody);
-    double jaccardBiGramSimilarityIndex(string firstCodeString, string secondCodeString);
-    double jaccardSimilarityIndex(string firstCodeString, string secondCodeString);
     static void computeFunctionTokenCounts(const vector<string> &functionBody, unordered_map<string, int> &tokenCounts);
     unordered_map<string, int> getAllUniqueTokenCounts(const unordered_map<string, int> &firstFunctionTokens, const unordered_map<string, int> &secondFunctionTokens);
 };

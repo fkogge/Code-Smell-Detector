@@ -14,6 +14,7 @@ using namespace std;
 const size_t Function::FIRST_LINE = 0;
 const char Function::OPENING_PAREN = '(';
 const char Function::CLOSING_PAREN = ')';
+const char Function::OPENING_CURLY_BRACKET = '{';
 const char Function::COMMA = ',';
 const char Function::SPACE = ' ';
 
@@ -66,7 +67,6 @@ string Function::transformToCodeString() {
     size_t firstCurlyIndex = codeString.find_first_of('{');
     size_t lastCurlyIndex = codeString.find_last_of('}');
     codeString = codeString.substr(firstCurlyIndex + 1, lastCurlyIndex - firstCurlyIndex - 1);
-    cout << "Code string, removed curlys: " << codeString << endl;
 
     return codeString;
 }
@@ -78,7 +78,6 @@ size_t Function::extractParameterCount() {
 
     // Adjustments by 1 to remove the parentheses
     string paramString = functionHeader.substr(openParenIndex + 1, closingParenIndex - openParenIndex - 1);
-    cout << "param string: " << paramString << endl;
 
     if (paramString.empty()) {
         return 0;
@@ -90,7 +89,6 @@ size_t Function::extractParameterCount() {
             paramCount++;
         }
     }
-    cout << "param count: " << paramCount << endl;
     return paramCount;
 
 }
@@ -100,10 +98,10 @@ string Function::getFunctionHeader() const {
 }
 
 vector<string> Function::getFunctionBody() const {
+    size_t bodyStartLine = (codeLines[FIRST_LINE].find(OPENING_CURLY_BRACKET) != string::npos) ? 1 : 2;
 
-    // FIXME: might be doing this wrong
     vector<string> functionBody;
-    for (size_t i = 1; i < numLinesOfCode - 1; i++) {
+    for (size_t i = bodyStartLine; i < numLinesOfCode - 1; i++) {
         functionBody.push_back(codeLines[i]);
     }
     return functionBody;

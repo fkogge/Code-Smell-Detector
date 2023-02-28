@@ -27,8 +27,10 @@ void printLongParameterListInfo(const CodeSmellDetector &codeSmellDetector);
 void printDuplicatedCodeInfo(const CodeSmellDetector &codeSmellDetector);
 
 int main(int argc, char *argv[]) {
-    // Handle error when resizing terminal window, ok to just ignore signal
+    // Handle error when resizing terminal window
+    // Ok to just ignore signal
     signal(SIGWINCH, SIG_IGN);
+
     printIntro();
 
     if (argc != 2) {
@@ -167,7 +169,12 @@ void run(const CodeSmellDetector &codeSmellDetector) {
 bool isValidOption(string userInput) {
     int option;
     string errorMessage = userInput + " is not a valid option. \nPlease choose an integer between "
-                                    + to_string(LONG_METHOD_OPTION) + " and " + to_string(QUIT_OPTION);
+                          + to_string(LONG_METHOD_OPTION) + " and " + to_string(QUIT_OPTION);
+
+    if (userInput.size() > 1) {
+        cout << errorMessage << endl;
+        return false;
+    }
 
     for (const char &c : userInput) {
         if (c == '.') {

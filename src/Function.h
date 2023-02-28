@@ -23,6 +23,7 @@ private:
     static const size_t FIRST_LINE;
     static const char OPENING_PAREN;
     static const char CLOSING_PAREN;
+    static const char OPENING_CURLY_BRACKET;
     static const char COMMA;
     static const char SPACE;
 
