@@ -52,9 +52,6 @@ int main(int argc, char *argv[]) {
 
     CodeSmellDetector codeSmellDetector(filename, fileContents);
 
-    vector<string> functionNameList = codeSmellDetector.getFunctionNames();
-    printFunctionNames(functionNameList);
-
     run(codeSmellDetector);
 
     return 0;
@@ -145,6 +142,8 @@ void displayMainMenu() {
 }
 
 void run(const CodeSmellDetector &codeSmellDetector) {
+    printFunctionNames(codeSmellDetector.getFunctionNames());
+
     int option = -1;
     string userInput;
 

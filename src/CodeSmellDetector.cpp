@@ -163,6 +163,8 @@ void CodeSmellDetector::detectDuplicatedCode() {
 
             double similarityIndex = jaccardTokenSimilarityIndex(firstFunction.getFunctionBody(),
                                                                  secondFunction.getFunctionBody());
+//            double similarityIndex = jaccardBiGramSimilarityIndex(firstFunction.getCodeString(),
+//                                                                 secondFunction.getCodeString());
             if (similarityIndex > MAX_SIMILARITY_INDEX) {
                 DuplicatedCode duplicatedCode(
                         DUPLICATED_CODE,
@@ -175,6 +177,46 @@ void CodeSmellDetector::detectDuplicatedCode() {
         }
     }
 }
+
+double CodeSmellDetector::jaccardBiGramSimilarityIndex(string firstCodeString, string secondCodeString) {
+    vector<string> firstBigrams;
+    vector<string> secondBigrams;
+
+    cout << firstCodeString << " bigrams: " << endl;
+    for (int i = 0; i < firstCodeString.size() - 1; i++) {
+        stringstream bigram;
+        bigram << firstCodeString[i] << firstCodeString[i + 1];
+        firstBigrams.push_back(bigram.str());
+    }
+
+    cout << secondCodeString << " bigrams: " << endl;
+    for (int i = 0; i < secondCodeString.size() - 1; i++) {
+        stringstream bigram;
+        bigram << secondCodeString[i] << secondCodeString[i + 1];
+        secondBigrams.push_back(bigram.str());
+    }
+
+    int matchingTokens = 0;
+    for (const string &token : firstBigrams) {
+        // If token from function one is also in function two
+        if (find(secondBigrams.begin(), secondBigrams.end(), token) != secondBigrams.end()) {
+            matchingTokens++;
+        }
+    }
+
+    vector<string> tokensInEither;
+    for (const string &token : firstBigrams) {
+        tokensInEither.push_back(token);
+    }
+    for (const string &token : secondBigrams) {
+        // If unique token from function two has not been recorded yet
+        if (find(tokensInEither.begin(), tokensInEither.end(), token) == tokensInEither.end()) {
+            tokensInEither.push_back(token);
+        }
+    }
+    return static_cast<double>(matchingTokens) / static_cast<double>(tokensInEither.size());
+}
+
 
 double CodeSmellDetector::jaccardTokenSimilarityIndex(vector<string> firstFunctionBody, vector<string> secondFunctionBody) {
     unordered_map<string, int> firstUniqueTokens;
@@ -243,7 +285,7 @@ CodeSmellDetector::getAllUniqueTokenCounts(const unordered_map<string, int> &fir
     return allUniqueTokens;
 }
 
-vector<string> CodeSmellDetector::getFunctionNames() {
+vector<string> CodeSmellDetector::getFunctionNames() const {
     return functionNames;
 }
 
@@ -281,19 +323,6 @@ bool CodeSmellDetector::hasLongParameterListSmell() const {
 
 bool CodeSmellDetector::hasDuplicateCodeSmell() const {
     return !duplicatedCodeOccurrences.empty();
-}
-
-bool CodeSmellDetector::hasSmell(CodeSmellDetector::SmellType smellType) const {
-    if (smellType == SmellType::LONG_METHOD) {
-        return !longMethodOccurences.empty();
-    } else if (smellType == SmellType::LONG_PARAMETER_LIST) {
-        return !longParameterListOccurences.empty();
-    } else if (smellType == SmellType::DUPLICATED_CODE) {
-        return !duplicatedCodeOccurrences.empty();
-    } else {
-        throw invalid_argument("Unknown smell type");
-    }
-
 }
 
 pair<size_t, size_t> CodeSmellDetector::getSortedPair(size_t first, size_t second) {

@@ -57,14 +57,13 @@ public:
     };
 
     CodeSmellDetector(const string &fileName, const vector<string> &linesFromFile);
-    vector<string> getFunctionNames();
+    vector<string> getFunctionNames() const;
     vector<LongMethod> getLongMethodOccurrences() const;
     vector<LongParameterList> getLongParameterListOccurrences() const;
     vector<DuplicatedCode> getDuplicateCodeOccurrences() const;
     bool hasLongMethodSmell() const;
     bool hasLongParameterListSmell() const;
     bool hasDuplicateCodeSmell() const;
-    bool hasSmell(SmellType smellType) const;
     static string smellTypeToString(SmellType type);
 
 private:
@@ -86,7 +85,17 @@ private:
     string fileName;
     vector<Function> functionList;
     vector<string> functionNames;
-    
+
+    /*
+     * Calculates the Jaccard similarity index of the two function bodies. This does a token by token comparison
+     * of the counts of each token, to consider that certain tokens could be repeated (i.e. common keywords such as
+     * for, while, int). Given that Jaccard similarity is (intersection) / (union of two sets), I define the
+     * intersection as the counts of each unique matching token seen in both functions, while I define the union as
+     * the sum of the counts of all unique tokens seen across either function. This will provide a more accurate
+     * calculation of whether the two functions are duplicated.
+     */
+    static double jaccardTokenSimilarityIndex(vector<string> firstFunctionBody, vector<string> secondFunctionBody);
+
     void skipBlankLines(size_t &currentLineNumber);
     void skipLinesUntilFunctionHeader(size_t &currentLineNumber);
     void skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumber);
@@ -98,9 +107,9 @@ private:
     void detectDuplicatedCode();
     static bool containsCharacter(const string &str, const char &character);
     static pair<size_t, size_t> getSortedPair(size_t first, size_t second);
-    double jaccardTokenSimilarityIndex(vector<string> firstFunctionBody, vector<string> secondFunctionBody);
+    double jaccardBiGramSimilarityIndex(string firstCodeString, string secondCodeString);
     static void computeFunctionTokenCounts(const vector<string> &functionBody, unordered_map<string, int> &tokenCounts);
-    unordered_map<string, int> getAllUniqueTokenCounts(const unordered_map<string, int> &firstFunctionTokens, const unordered_map<string, int> &secondFunctionTokens);
+    static unordered_map<string, int> getAllUniqueTokenCounts(const unordered_map<string, int> &firstFunctionTokens, const unordered_map<string, int> &secondFunctionTokens);
 };
 
 
