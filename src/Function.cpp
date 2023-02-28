@@ -18,7 +18,7 @@ const char Function::OPENING_CURLY_BRACKET = '{';
 const char Function::COMMA = ',';
 const char Function::SPACE = ' ';
 
-Function::Function(vector<string> codeLines) {
+Function::Function(const vector<string> &codeLines) {
     this->codeLines = codeLines;
     this->numLinesOfCode = codeLines.size();
     this->name = extractName();

@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    CodeSmellDetector codeSmellDetector(filename, fileContents);
+    CodeSmellDetector codeSmellDetector(fileContents);
 
     run(codeSmellDetector);
 

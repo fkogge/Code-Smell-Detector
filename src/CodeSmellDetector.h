@@ -56,7 +56,7 @@ public:
         }
     };
 
-    CodeSmellDetector(const string &fileName, const vector<string> &linesFromFile);
+    CodeSmellDetector(const vector<string> &linesFromFile);
     vector<string> getFunctionNames() const;
     vector<LongMethod> getLongMethodOccurrences() const;
     vector<LongParameterList> getLongParameterListOccurrences() const;
@@ -71,7 +71,6 @@ private:
     static const int MAX_LINES_OF_CODE = 15;
     static const int MAX_PARAMETER_COUNT = 3;
     static constexpr const double MAX_SIMILARITY_INDEX = 0.75;
-    static const int POSSIBLE_CHARS = 255;
     static const char OPENING_CURLY_BRACKET;
     static const char CLOSING_CURLY_BRACKET;
     static const char OPENING_PAREN;

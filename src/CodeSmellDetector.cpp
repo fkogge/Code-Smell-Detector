@@ -7,7 +7,6 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
-#include <stack>
 #include <climits>
 #include <algorithm>
 #include <unordered_map>
@@ -18,8 +17,7 @@ const char CodeSmellDetector::CLOSING_CURLY_BRACKET = '}';
 const char CodeSmellDetector::OPENING_PAREN = '(';
 
 
-CodeSmellDetector::CodeSmellDetector(const string &fileName, const vector<string> &linesFromFile) {
-    this->fileName = fileName;
+CodeSmellDetector::CodeSmellDetector(const vector<string> &linesFromFile) {
     this->linesFromFile = linesFromFile;
     this->linesFromFile.insert(this->linesFromFile.begin(), "SKIP INDEX 0");
     this->lineCount = linesFromFile.size();
@@ -99,12 +97,11 @@ size_t CodeSmellDetector::findFunctionClosingCurlyBracketLine(size_t startLineNu
                 openCurlyCount++; // Push stack
             } else if (currentChar == CodeSmellDetector::CLOSING_CURLY_BRACKET) {
                 if (openCurlyCount == 1) {
-                    // Found matching bracket
-                    return currentLineNumber;
+                    return currentLineNumber; // Found matching bracket
                 } else if (openCurlyCount > 0) {
                     openCurlyCount--; // Pop stack
                 }
-            }
+            } // else skip
         }
     }
 

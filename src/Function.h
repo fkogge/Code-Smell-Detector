@@ -12,7 +12,7 @@ using namespace std;
 
 class Function {
 public:
-    Function(vector<string> codeLines);
+    Function(const vector<string> &codeLines);
     size_t getNumberOfLinesOfCode() const;
     size_t getNumberOfParameters() const;
     string getName() const;
