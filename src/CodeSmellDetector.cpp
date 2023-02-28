@@ -201,7 +201,7 @@ double CodeSmellDetector::jaccardTokenSimilarityIndex(vector<string> firstFuncti
         totalTokens += tokenEntry.second;
     }
 
-    return (double) matchingTokens / totalTokens;
+    return static_cast<double>(matchingTokens) / totalTokens;
 }
 
 void CodeSmellDetector::computeFunctionTokenCounts(const vector<string> &functionBody, unordered_map<string, int> &tokenCounts) {
