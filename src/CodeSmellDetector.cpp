@@ -12,11 +12,6 @@
 #include <unordered_map>
 using namespace std;
 
-const char CodeSmellDetector::OPENING_CURLY_BRACKET = '{';
-const char CodeSmellDetector::CLOSING_CURLY_BRACKET = '}';
-const char CodeSmellDetector::OPENING_PAREN = '(';
-
-
 CodeSmellDetector::CodeSmellDetector(const vector<string> &linesFromFile) {
     this->linesFromFile = linesFromFile;
     this->linesFromFile.insert(this->linesFromFile.begin(), "SKIP INDEX 0");
@@ -67,7 +62,7 @@ void CodeSmellDetector::skipBlankLines(size_t &currentLineNumber) {
 
 void CodeSmellDetector::skipLinesUntilFunctionHeader(size_t &currentLineNumber) {
     while (currentLineNumber < lineCount &&
-            (!containsCharacter(linesFromFile[currentLineNumber], CodeSmellDetector::OPENING_PAREN)
+            (!containsCharacter(linesFromFile[currentLineNumber], Function::OPENING_PAREN)
             //|| containsCharacter(linesFromFile[currentLineNumber], ';') TODO: do I need this check?
             )
         ) {
@@ -77,7 +72,7 @@ void CodeSmellDetector::skipLinesUntilFunctionHeader(size_t &currentLineNumber) 
 
 void CodeSmellDetector::skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumber) {
     while (currentLineNumber < lineCount &&
-           !containsCharacter(linesFromFile[currentLineNumber], CodeSmellDetector::OPENING_CURLY_BRACKET)) {
+           !containsCharacter(linesFromFile[currentLineNumber], Function::OPENING_CURLY_BRACKET)) {
         currentLineNumber++;
     }
 }
@@ -93,9 +88,9 @@ size_t CodeSmellDetector::findFunctionClosingCurlyBracketLine(size_t startLineNu
 
     for (size_t currentLineNumber = startLineNumber; currentLineNumber < linesFromFile.size(); currentLineNumber++) {
         for (const char &currentChar : linesFromFile[currentLineNumber]) {
-            if (currentChar == CodeSmellDetector::OPENING_CURLY_BRACKET) {
+            if (currentChar == Function::OPENING_CURLY_BRACKET) {
                 openCurlyCount++; // Push stack
-            } else if (currentChar == CodeSmellDetector::CLOSING_CURLY_BRACKET) {
+            } else if (currentChar == Function::CLOSING_CURLY_BRACKET) {
                 if (openCurlyCount == 1) {
                     return currentLineNumber; // Found matching bracket
                 } else if (openCurlyCount > 0) {

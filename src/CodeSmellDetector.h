@@ -13,6 +13,10 @@
 
 using namespace std;
 
+/**
+ * Detects three types of code smells: Long Method, Long Parameter List, and Duplicated Code.
+ * Takes a list of lines of code from the file as input.
+ */
 class CodeSmellDetector {
 
 public:
@@ -56,24 +60,56 @@ public:
         }
     };
 
+    /*
+     * Initialize all fields and run code smell detection algorithms
+     */
     CodeSmellDetector(const vector<string> &linesFromFile);
+
+    /*
+     * Get a list of function names extracted from the file
+     */
     vector<string> getFunctionNames() const;
+
+    /*
+     * Get all occurrences of Long Method code smell
+     */
     vector<LongMethod> getLongMethodOccurrences() const;
+
+    /*
+     * Get all occurrences of Long Parameter List code smell
+     */
     vector<LongParameterList> getLongParameterListOccurrences() const;
+
+    /*
+     * Get all occurrences of Duplicated Code smell
+     */
     vector<DuplicatedCode> getDuplicateCodeOccurrences() const;
+
+    /*
+     * Was Long Method detected?
+     */
     bool hasLongMethodSmell() const;
+
+    /*
+     * Was Long Parameter List detected?
+     */
     bool hasLongParameterListSmell() const;
+
+    /*
+     * Was Duplicate Code detected?
+     */
     bool hasDuplicateCodeSmell() const;
+
+    /*
+     * Convert SmellType enum to string representation
+     */
     static string smellTypeToString(SmellType type);
 
 private:
-
+    // Code smell thresholds
     static const int MAX_LINES_OF_CODE = 15;
     static const int MAX_PARAMETER_COUNT = 3;
     static constexpr const double MAX_SIMILARITY_INDEX = 0.75;
-    static const char OPENING_CURLY_BRACKET;
-    static const char CLOSING_CURLY_BRACKET;
-    static const char OPENING_PAREN;
 
     vector<LongMethod> longMethodOccurences;
     vector<LongParameterList> longParameterListOccurences;
@@ -81,9 +117,24 @@ private:
 
     size_t lineCount;
     vector<string> linesFromFile;
-    string fileName;
     vector<Function> functionList;
     vector<string> functionNames;
+
+    // Skip lines while updating currentLineNumber (passed by reference)
+    void skipBlankLines(size_t &currentLineNumber);
+    void skipLinesUntilFunctionHeader(size_t &currentLineNumber);
+    void skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumber);
+
+    size_t findFunctionClosingCurlyBracketLine(size_t startLineNumber);
+
+    // Store each line of code in functionContent (passed by reference)
+    void extractFunctionContent(vector<string> &functionContent, size_t startLineNumber, size_t endLineNumber);
+    void extractFunctions();
+
+    // Code smell detection helper methods
+    void detectLongMethod();
+    void detectLongParameterList();
+    void detectDuplicatedCode();
 
     /*
      * Calculates the Jaccard similarity index of the two function bodies. This does a token by token comparison
@@ -94,21 +145,13 @@ private:
      * calculation of whether the two functions are duplicated.
      */
     static double jaccardTokenSimilarityIndex(const vector<string> &firstFunctionBody, const vector<string> &secondFunctionBody);
-
-    void skipBlankLines(size_t &currentLineNumber);
-    void skipLinesUntilFunctionHeader(size_t &currentLineNumber);
-    void skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumber);
-    size_t findFunctionClosingCurlyBracketLine(size_t startLineNumber);
-    void extractFunctionContent(vector<string> &functionContent, size_t startLineNumber, size_t endLineNumber);
-    void extractFunctions();
-    void detectLongMethod();
-    void detectLongParameterList();
-    void detectDuplicatedCode();
-    static bool containsCharacter(const string &str, const char &character);
-    static pair<size_t, size_t> getSortedPair(size_t first, size_t second);
-    double jaccardBiGramSimilarityIndex(string firstCodeString, string secondCodeString);
     static void computeFunctionTokenCounts(const vector<string> &functionBody, unordered_map<string, int> &tokenCounts);
+    static pair<size_t, size_t> getSortedPair(size_t first, size_t second);
     static unordered_map<string, int> getAllUniqueTokenCounts(const unordered_map<string, int> &firstFunctionTokens, const unordered_map<string, int> &secondFunctionTokens);
+
+    static bool containsCharacter(const string &str, const char &character);
+
+    double jaccardBiGramSimilarityIndex(string firstCodeString, string secondCodeString);
 };
 
 

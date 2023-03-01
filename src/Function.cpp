@@ -15,6 +15,7 @@ const size_t Function::FIRST_LINE = 0;
 const char Function::OPENING_PAREN = '(';
 const char Function::CLOSING_PAREN = ')';
 const char Function::OPENING_CURLY_BRACKET = '{';
+const char Function::CLOSING_CURLY_BRACKET = '}';
 const char Function::COMMA = ',';
 const char Function::SPACE = ' ';
 
@@ -72,12 +73,9 @@ string Function::transformToCodeString() {
 }
 
 size_t Function::extractParameterCount() {
-    string functionHeader = getFunctionHeader();
-    size_t openParenIndex = functionHeader.find(OPENING_PAREN);
-    size_t closingParenIndex = functionHeader.find(CLOSING_PAREN);
-
-    // Adjustments by 1 to remove the parentheses
-    string paramString = functionHeader.substr(openParenIndex + 1, closingParenIndex - openParenIndex - 1);
+    string paramString = getSubstringBetweenCharacters(getFunctionHeader(),
+                                                       OPENING_PAREN,
+                                                       CLOSING_PAREN);
 
     if (paramString.empty()) {
         return 0;
@@ -104,10 +102,9 @@ vector<string> Function::getFunctionBody() const {
 
     // If function is defined and written in one line
     if (numLinesOfCode == 1) {
-        string line = codeLines[FIRST_LINE];
-        size_t openCurlyIndex = line.find_first_of('{');
-        size_t closingCurlyIndex = line.find_last_of('}');
-        string body = line.substr(openCurlyIndex + 1, closingCurlyIndex - openCurlyIndex - 1);
+        string body = getSubstringBetweenCharacters(codeLines[FIRST_LINE],
+                                                    OPENING_CURLY_BRACKET,
+                                                    CLOSING_CURLY_BRACKET);
         functionBody.push_back(body);
     } else {
         for (size_t i = bodyStartLine; i < numLinesOfCode - 1; i++) {
@@ -116,4 +113,10 @@ vector<string> Function::getFunctionBody() const {
     }
 
     return functionBody;
+}
+
+string Function::getSubstringBetweenCharacters(const string &line, const char &left, const char &right) {
+    size_t leftIndex = line.find_first_of(left);
+    size_t rightIndex = line.find_last_of(right);
+    return line.substr(leftIndex + 1, leftIndex - rightIndex - 1);
 }

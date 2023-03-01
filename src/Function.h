@@ -10,33 +10,64 @@
 #include <vector>
 using namespace std;
 
+/**
+ * Represents a function from a code file. Stores important properties of a function
+ * including number of lines of code, number of parameters, and name of the function.
+ */
 class Function {
 public:
-    Function(const vector<string> &codeLines);
-    size_t getNumberOfLinesOfCode() const;
-    size_t getNumberOfParameters() const;
-    string getName() const;
-    string getCodeString() const;
-    vector<string> getFunctionBody() const;
-
-private:
-    static const size_t FIRST_LINE;
+    // Common tokens
     static const char OPENING_PAREN;
     static const char CLOSING_PAREN;
     static const char OPENING_CURLY_BRACKET;
+    static const char CLOSING_CURLY_BRACKET;
     static const char COMMA;
     static const char SPACE;
+
+    /*
+     * Initialize all function properties
+     */
+    Function(const vector<string> &codeLines);
+
+    /*
+     * Get the number of lines of code (LOC) in this function
+     */
+    size_t getNumberOfLinesOfCode() const;
+
+    /*
+     * Get number of parameters in this function
+     */
+    size_t getNumberOfParameters() const;
+
+    /*
+     * Get the name of this function
+     */
+    string getName() const;
+    string getCodeString() const;
+
+    /*
+     * Get the code from the body of the function. Each element in the list
+     * is a line of code from the function.
+     */
+    vector<string> getFunctionBody() const;
+
+private:
+    static const size_t FIRST_LINE; // Line 1 stored at index 0
 
     vector<string> codeLines;
     string name;
     size_t numLinesOfCode;
     size_t numParameters;
     string codeString;
+
     string extractName();
-    string transformToCodeString();
     size_t extractParameterCount();
+    string transformToCodeString();
     string getFunctionHeader() const;
 
+    // Helper method mainly for getting code between common matching
+    // tokens such as parentheses or curly brackets
+    static string getSubstringBetweenCharacters(const string &line, const char &left, const char &right);
 };
 
 
