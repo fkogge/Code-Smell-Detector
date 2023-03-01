@@ -140,19 +140,9 @@ void CodeSmellDetector::detectDuplicatedCode() {
 
     for (size_t i = 0; i < size; i++) { // FIXME: don't need to check same function pairs
         for (size_t j = 0; j < size; j++) {
-            // Don't compare the same function
-            if (i == j) {
+            if (isDuplicatePair(alreadyCompared, i, j)) {
                 continue;
             }
-
-            pair<size_t, size_t> pair = getSortedPair(i, j);
-
-            // If we already compared these two functions
-            if (find(alreadyCompared.begin(), alreadyCompared.end(), pair) != alreadyCompared.end()) {
-                continue;
-            }
-
-            alreadyCompared.push_back(pair);
 
             Function firstFunction = functionList[i];
             Function secondFunction = functionList[j];
@@ -327,6 +317,23 @@ pair<size_t, size_t> CodeSmellDetector::getSortedPair(size_t first, size_t secon
         swap(pair.first, pair.second);
     }
     return pair;
+}
+
+bool CodeSmellDetector::isDuplicatePair(vector<pair<size_t, size_t>> &alreadyCompared, size_t i, size_t j) {
+    // Don't compare the same function
+    if (i == j) {
+        return true;
+    }
+
+    pair<size_t, size_t> pair = getSortedPair(i, j);
+
+    // If we already compared these two functions
+    if (find(alreadyCompared.begin(), alreadyCompared.end(), pair) != alreadyCompared.end()) {
+        return true;
+    }
+
+    alreadyCompared.push_back(pair);
+    return false;
 }
 
 

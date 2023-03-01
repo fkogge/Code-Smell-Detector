@@ -149,6 +149,9 @@ private:
     static pair<size_t, size_t> getSortedPair(size_t first, size_t second);
     static unordered_map<string, int> getAllUniqueTokenCounts(const unordered_map<string, int> &firstFunctionTokens, const unordered_map<string, int> &secondFunctionTokens);
 
+    // Helper for detecting if we compared these two functions already
+    static bool isDuplicatePair(vector<pair<size_t, size_t>> &alreadyCompared, size_t i, size_t j);
+
     static bool containsCharacter(const string &str, const char &character);
 
     double jaccardBiGramSimilarityIndex(string firstCodeString, string secondCodeString);
