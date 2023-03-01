@@ -268,11 +268,3 @@ bool CodeSmellDetector::hasLongParameterListSmell() const {
 bool CodeSmellDetector::hasDuplicateCodeSmell() const {
     return !duplicatedCodeOccurrences.empty();
 }
-
-pair<size_t, size_t> CodeSmellDetector::getSortedPair(size_t first, size_t second) {
-    pair<size_t, size_t> pair(first, second);
-    if (first > second) {
-        swap(pair.first, pair.second);
-    }
-    return pair;
-}

@@ -146,7 +146,6 @@ private:
      */
     static double jaccardTokenSimilarityIndex(const vector<string> &firstFunctionBody, const vector<string> &secondFunctionBody);
     static void computeFunctionTokenCounts(const vector<string> &functionBody, unordered_map<string, int> &tokenCounts);
-    static pair<size_t, size_t> getSortedPair(size_t first, size_t second);
     static unordered_map<string, int> getAllUniqueTokenCounts(const unordered_map<string, int> &firstFunctionTokens, const unordered_map<string, int> &secondFunctionTokens);
 
     static bool containsCharacter(const string &str, const char &character);
