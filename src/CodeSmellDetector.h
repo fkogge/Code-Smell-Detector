@@ -38,10 +38,10 @@ public:
 
     struct LongParameterList  {
         SmellType type;
-        size_t parameterCount;
+        int parameterCount;
         string functionName;
 
-        LongParameterList(SmellType type, size_t parameterCount, string functionName) {
+        LongParameterList(SmellType type, int parameterCount, string functionName) {
             this->type = type;
             this->parameterCount = parameterCount;
             this->functionName = functionName;
@@ -111,11 +111,11 @@ private:
     static const int MAX_PARAMETER_COUNT = 3;
     static constexpr const double MAX_SIMILARITY_INDEX = 0.75;
 
-    vector<LongMethod> longMethodOccurences;
-    vector<LongParameterList> longParameterListOccurences;
+    vector<LongMethod> longMethodOccurrences;
+    vector<LongParameterList> longParameterListOccurrences;
     vector<DuplicatedCode> duplicatedCodeOccurrences;
 
-    size_t lineCount;
+    size_t fileLineCount;
     vector<string> linesFromFile;
     vector<Function> functionList;
     vector<string> functionNames;

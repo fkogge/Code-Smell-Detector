@@ -15,7 +15,7 @@ using namespace std;
 CodeSmellDetector::CodeSmellDetector(const vector<string> &linesFromFile) {
     this->linesFromFile = linesFromFile;
     this->linesFromFile.insert(this->linesFromFile.begin(), "SKIP INDEX 0");
-    this->lineCount = linesFromFile.size();
+    this->fileLineCount = linesFromFile.size();
 
     extractFunctions();
     detectLongMethod();
@@ -32,7 +32,7 @@ void CodeSmellDetector::extractFunctions() {
     size_t openParenLineNumber;
     size_t openCurlyLineNumber;
 
-    while (currentLineNumber < lineCount) {
+    while (currentLineNumber < fileLineCount) {
         skipBlankLines(currentLineNumber);
         skipLinesUntilFunctionHeader(currentLineNumber);
         openParenLineNumber = currentLineNumber;
@@ -55,13 +55,13 @@ void CodeSmellDetector::extractFunctions() {
 }
 
 void CodeSmellDetector::skipBlankLines(size_t &currentLineNumber) {
-    while (currentLineNumber < lineCount && linesFromFile[currentLineNumber].empty()) {
+    while (currentLineNumber < fileLineCount && linesFromFile[currentLineNumber].empty()) {
         currentLineNumber++;
     }
 }
 
 void CodeSmellDetector::skipLinesUntilFunctionHeader(size_t &currentLineNumber) {
-    while (currentLineNumber < lineCount &&
+    while (currentLineNumber < fileLineCount &&
             (!containsCharacter(linesFromFile[currentLineNumber], Function::OPENING_PAREN)
             //|| containsCharacter(linesFromFile[currentLineNumber], ';') TODO: do I need this check?
             )
@@ -71,7 +71,7 @@ void CodeSmellDetector::skipLinesUntilFunctionHeader(size_t &currentLineNumber) 
 }
 
 void CodeSmellDetector::skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumber) {
-    while (currentLineNumber < lineCount &&
+    while (currentLineNumber < fileLineCount &&
            !containsCharacter(linesFromFile[currentLineNumber], Function::OPENING_CURLY_BRACKET)) {
         currentLineNumber++;
     }
@@ -82,9 +82,8 @@ bool CodeSmellDetector::containsCharacter(const string &str, const char &charact
 }
 
 size_t CodeSmellDetector::findFunctionClosingCurlyBracketLine(size_t startLineNumber) {
-    // Pseudo-stack (don't actually need stack since
-    // we're not doing anything with the brackets)
-    size_t openCurlyCount = 0;
+    // Pseudo-stack (don't need actual stack since we're not doing anything with the brackets)
+    int openCurlyCount = 0;
 
     for (size_t currentLineNumber = startLineNumber; currentLineNumber < linesFromFile.size(); currentLineNumber++) {
         for (const char &currentChar : linesFromFile[currentLineNumber]) {
@@ -110,16 +109,18 @@ void CodeSmellDetector::extractFunctionContent(vector<string> &functionContent, 
         if (line.empty() || line == "\n" || line == "\r") {
             continue;
         }
+
         functionContent.push_back(linesFromFile[i]);
     }
 }
 
 void CodeSmellDetector::detectLongMethod() {
     for (const Function &function : functionList) {
-        size_t lineCount = function.getNumberOfLinesOfCode();
-        if (lineCount > MAX_LINES_OF_CODE) {
-            LongMethod longMethod(LONG_METHOD, lineCount, function.getName());
-            longMethodOccurences.push_back(longMethod);
+        size_t functionLineCount = function.getNumberOfLinesOfCode();
+
+        if (functionLineCount > MAX_LINES_OF_CODE) {
+            LongMethod longMethod(LONG_METHOD, functionLineCount, function.getName());
+            longMethodOccurrences.push_back(longMethod);
         }
     }
 }
@@ -127,19 +128,20 @@ void CodeSmellDetector::detectLongMethod() {
 void CodeSmellDetector::detectLongParameterList() {
     for (const Function &function : functionList) {
         int parameterCount = function.getNumberOfParameters();
+
         if (parameterCount > MAX_PARAMETER_COUNT) {
             LongParameterList longParameterList(LONG_PARAMETER_LIST, parameterCount, function.getName());
-            longParameterListOccurences.push_back(longParameterList);
+            longParameterListOccurrences.push_back(longParameterList);
         }
     }
 }
 
 void CodeSmellDetector::detectDuplicatedCode() {
-    size_t size = functionList.size();
+    size_t numFunctions = functionList.size();
     vector<pair<size_t, size_t>> alreadyCompared;
 
-    for (size_t i = 0; i < size; i++) { // FIXME: don't need to check same function pairs
-        for (size_t j = 0; j < size; j++) {
+    for (size_t i = 0; i < numFunctions; i++) { // FIXME: don't need to check same function pairs
+        for (size_t j = 0; j < numFunctions; j++) {
             if (isDuplicatePair(alreadyCompared, i, j)) {
                 continue;
             }
@@ -239,9 +241,12 @@ void CodeSmellDetector::computeFunctionTokenCounts(const vector<string> &functio
 
         while (iss >> token) {
             auto tokenEntry = tokenCounts.find(token);
+
             if (tokenEntry == tokenCounts.end()) {
+                // Record new token
                 tokenCounts.insert({token, 1});
             } else {
+                // Update token count if already recorded
                 tokenEntry->second++;
             }
         }
@@ -260,10 +265,10 @@ CodeSmellDetector::getAllUniqueTokenCounts(const unordered_map<string, int> &fir
         auto tokenEntry = allUniqueTokens.find(token);
 
         if (tokenEntry == firstFunctionTokens.end()) {
-            // Add token from second function
+            // Record unique token from second function
             allUniqueTokens.insert({token, count});
         } else {
-            // Matching token from first and second function so just update the count
+            // Matching token in both functions -> update the count
             tokenEntry->second += count;
         }
     }
@@ -276,7 +281,7 @@ vector<string> CodeSmellDetector::getFunctionNames() const {
 }
 
 vector<CodeSmellDetector::LongParameterList> CodeSmellDetector::getLongParameterListOccurrences() const {
-    return longParameterListOccurences;
+    return longParameterListOccurrences;
 }
 
 vector<CodeSmellDetector::DuplicatedCode> CodeSmellDetector::getDuplicateCodeOccurrences() const {
@@ -284,7 +289,7 @@ vector<CodeSmellDetector::DuplicatedCode> CodeSmellDetector::getDuplicateCodeOcc
 }
 
 vector<CodeSmellDetector::LongMethod> CodeSmellDetector::getLongMethodOccurrences() const {
-    return longMethodOccurences;
+    return longMethodOccurrences;
 }
 
 string CodeSmellDetector::smellTypeToString(CodeSmellDetector::SmellType type) {
@@ -300,11 +305,11 @@ string CodeSmellDetector::smellTypeToString(CodeSmellDetector::SmellType type) {
 
 
 bool CodeSmellDetector::hasLongMethodSmell() const {
-    return !longMethodOccurences.empty();
+    return !longMethodOccurrences.empty();
 }
 
 bool CodeSmellDetector::hasLongParameterListSmell() const {
-    return !longParameterListOccurences.empty();
+    return !longParameterListOccurrences.empty();
 }
 
 bool CodeSmellDetector::hasDuplicateCodeSmell() const {
@@ -335,10 +340,3 @@ bool CodeSmellDetector::isDuplicatePair(vector<pair<size_t, size_t>> &alreadyCom
     alreadyCompared.push_back(pair);
     return false;
 }
-
-
-
-
-
-
-

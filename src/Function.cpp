@@ -31,7 +31,7 @@ size_t Function::getNumberOfLinesOfCode() const {
     return numLinesOfCode;
 }
 
-size_t Function::getNumberOfParameters() const {
+int Function::getNumberOfParameters() const {
     return numParameters;
 }
 
@@ -72,7 +72,7 @@ string Function::transformToCodeString() {
     return codeString;
 }
 
-size_t Function::extractParameterCount() {
+int Function::extractParameterCount() {
     string paramString = getSubstringBetweenCharacters(getFunctionHeader(),
                                                        OPENING_PAREN,
                                                        CLOSING_PAREN);
@@ -81,7 +81,7 @@ size_t Function::extractParameterCount() {
         return 0;
     }
 
-    size_t paramCount = 1;
+    int paramCount = 1;
     for (char c : paramString) {
         if (c == COMMA) {
             paramCount++;

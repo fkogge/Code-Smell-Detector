@@ -37,7 +37,7 @@ public:
     /*
      * Get number of parameters in this function
      */
-    size_t getNumberOfParameters() const;
+    int getNumberOfParameters() const;
 
     /*
      * Get the name of this function
@@ -57,11 +57,11 @@ private:
     vector<string> codeLines;
     string name;
     size_t numLinesOfCode;
-    size_t numParameters;
+    int numParameters;
     string codeString;
 
     string extractName();
-    size_t extractParameterCount();
+    int extractParameterCount();
     string transformToCodeString();
     string getFunctionHeader() const;
 
