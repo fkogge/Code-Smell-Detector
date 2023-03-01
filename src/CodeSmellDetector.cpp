@@ -166,46 +166,6 @@ void CodeSmellDetector::detectDuplicatedCode() {
     }
 }
 
-double CodeSmellDetector::jaccardBiGramSimilarityIndex(string firstCodeString, string secondCodeString) {
-    vector<string> firstBigrams;
-    vector<string> secondBigrams;
-
-    cout << firstCodeString << " bigrams: " << endl;
-    for (int i = 0; i < firstCodeString.size() - 1; i++) {
-        stringstream bigram;
-        bigram << firstCodeString[i] << firstCodeString[i + 1];
-        firstBigrams.push_back(bigram.str());
-    }
-
-    cout << secondCodeString << " bigrams: " << endl;
-    for (int i = 0; i < secondCodeString.size() - 1; i++) {
-        stringstream bigram;
-        bigram << secondCodeString[i] << secondCodeString[i + 1];
-        secondBigrams.push_back(bigram.str());
-    }
-
-    int matchingTokens = 0;
-    for (const string &token : firstBigrams) {
-        // If token from function one is also in function two
-        if (find(secondBigrams.begin(), secondBigrams.end(), token) != secondBigrams.end()) {
-            matchingTokens++;
-        }
-    }
-
-    vector<string> tokensInEither;
-    for (const string &token : firstBigrams) {
-        tokensInEither.push_back(token);
-    }
-    for (const string &token : secondBigrams) {
-        // If unique token from function two has not been recorded yet
-        if (find(tokensInEither.begin(), tokensInEither.end(), token) == tokensInEither.end()) {
-            tokensInEither.push_back(token);
-        }
-    }
-    return static_cast<double>(matchingTokens) / static_cast<double>(tokensInEither.size());
-}
-
-
 double CodeSmellDetector::jaccardTokenSimilarityIndex(const vector<string> &firstFunctionBody, const vector<string> &secondFunctionBody) {
     unordered_map<string, int> firstUniqueTokens;
     unordered_map<string, int> secondUniqueTokens;

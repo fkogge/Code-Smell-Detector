@@ -153,8 +153,6 @@ private:
     static bool isDuplicatePair(vector<pair<size_t, size_t>> &alreadyCompared, size_t i, size_t j);
 
     static bool containsCharacter(const string &str, const char &character);
-
-    double jaccardBiGramSimilarityIndex(string firstCodeString, string secondCodeString);
 };
 
 
