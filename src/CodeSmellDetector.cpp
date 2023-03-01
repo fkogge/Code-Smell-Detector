@@ -138,21 +138,14 @@ void CodeSmellDetector::detectLongParameterList() {
 
 void CodeSmellDetector::detectDuplicatedCode() {
     size_t numFunctions = functionList.size();
-    vector<pair<size_t, size_t>> alreadyCompared;
 
-    for (size_t i = 0; i < numFunctions; i++) { // FIXME: don't need to check same function pairs
-        for (size_t j = 0; j < numFunctions; j++) {
-            if (isDuplicatePair(alreadyCompared, i, j)) {
-                continue;
-            }
-
+    for (size_t i = 0; i < numFunctions - 1; i++) {
+        for (size_t j = i + 1; j < numFunctions; j++) {
             Function firstFunction = functionList[i];
             Function secondFunction = functionList[j];
 
             double similarityIndex = jaccardTokenSimilarityIndex(firstFunction.getFunctionBody(),
                                                                  secondFunction.getFunctionBody());
-//            double similarityIndex = jaccardBiGramSimilarityIndex(firstFunction.getCodeString(),
-//                                                                 secondFunction.getCodeString());
             if (similarityIndex > MAX_SIMILARITY_INDEX) {
                 DuplicatedCode duplicatedCode(
                         DUPLICATED_CODE,
@@ -282,21 +275,4 @@ pair<size_t, size_t> CodeSmellDetector::getSortedPair(size_t first, size_t secon
         swap(pair.first, pair.second);
     }
     return pair;
-}
-
-bool CodeSmellDetector::isDuplicatePair(vector<pair<size_t, size_t>> &alreadyCompared, size_t i, size_t j) {
-    // Don't compare the same function
-    if (i == j) {
-        return true;
-    }
-
-    pair<size_t, size_t> pair = getSortedPair(i, j);
-
-    // If we already compared these two functions
-    if (find(alreadyCompared.begin(), alreadyCompared.end(), pair) != alreadyCompared.end()) {
-        return true;
-    }
-
-    alreadyCompared.push_back(pair);
-    return false;
 }

@@ -41,7 +41,7 @@ public:
         int parameterCount;
         string functionName;
 
-        LongParameterList(SmellType type, int parameterCount, string functionName) {
+        LongParameterList(SmellType type, int parameterCount, const string &functionName) {
             this->type = type;
             this->parameterCount = parameterCount;
             this->functionName = functionName;
@@ -53,7 +53,7 @@ public:
         double similarityIndex;
         pair<string, string> functionNames;
 
-        DuplicatedCode(SmellType type, double similarityIndex, string functionOne, string functionTwo) {
+        DuplicatedCode(SmellType type, double similarityIndex, const string &functionOne, const string &functionTwo) {
             this->type = type;
             this->similarityIndex = similarityIndex;
             this->functionNames = pair<string, string>(functionOne, functionTwo);
@@ -148,9 +148,6 @@ private:
     static void computeFunctionTokenCounts(const vector<string> &functionBody, unordered_map<string, int> &tokenCounts);
     static pair<size_t, size_t> getSortedPair(size_t first, size_t second);
     static unordered_map<string, int> getAllUniqueTokenCounts(const unordered_map<string, int> &firstFunctionTokens, const unordered_map<string, int> &secondFunctionTokens);
-
-    // Helper for detecting if we compared these two functions already
-    static bool isDuplicatePair(vector<pair<size_t, size_t>> &alreadyCompared, size_t i, size_t j);
 
     static bool containsCharacter(const string &str, const char &character);
 };
