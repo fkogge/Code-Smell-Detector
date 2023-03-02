@@ -29,7 +29,7 @@ public:
         size_t lineCount;
         string functionName;
 
-        LongMethod(SmellType type, size_t lineCount, string functionName) {
+        LongMethod(SmellType type, size_t lineCount, const string &functionName) {
             this->type = type;
             this->lineCount = lineCount;
             this->functionName = functionName;
@@ -63,7 +63,7 @@ public:
     /*
      * Initialize all fields and run code smell detection algorithms
      */
-    CodeSmellDetector(const vector<string> &linesFromFile);
+    explicit CodeSmellDetector(const vector<string> &linesFromFile);
 
     /*
      * Get a list of function names extracted from the file
@@ -146,8 +146,8 @@ private:
      */
     static double jaccardTokenSimilarityIndex(const vector<string> &firstFunctionBody, const vector<string> &secondFunctionBody);
     static void computeFunctionTokenCounts(const vector<string> &functionBody, unordered_map<string, int> &tokenCounts);
-    static unordered_map<string, int> getAllUniqueTokenCounts(const unordered_map<string, int> &firstFunctionTokens, const unordered_map<string, int> &secondFunctionTokens);
-
+    static unordered_map<string, int> getAllUniqueTokenCounts(const unordered_map<string, int> &firstFunctionTokens,
+                                                              const unordered_map<string, int> &secondFunctionTokens);
     static bool containsCharacter(const string &str, const char &character);
 };
 

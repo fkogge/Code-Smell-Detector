@@ -10,6 +10,7 @@
 #include <climits>
 #include <algorithm>
 #include <unordered_map>
+
 using namespace std;
 
 CodeSmellDetector::CodeSmellDetector(const vector<string> &linesFromFile) {

@@ -1,5 +1,5 @@
 //
-// Created by kogge on 2/18/2023.
+// Created by Francis Kogge on 2/18/2023.
 //
 
 #include "Function.h"
@@ -23,7 +23,6 @@ Function::Function(const vector<string> &codeLines) {
     this->codeLines = codeLines;
     this->numLinesOfCode = codeLines.size();
     this->name = extractName();
-    this->codeString = transformToCodeString();
     this->numParameters = extractParameterCount();
 }
 
@@ -39,10 +38,6 @@ string Function::getName() const {
     return name;
 }
 
-string Function::getCodeString() const {
-    return codeString;
-}
-
 string Function::extractName() {
     string functionHeader = getFunctionHeader();
     istringstream iss(functionHeader);
@@ -53,23 +48,6 @@ string Function::extractName() {
     iss >> restOfFunctionHeader;
 
     return restOfFunctionHeader.substr(0, restOfFunctionHeader.find(OPENING_PAREN));
-}
-
-string Function::transformToCodeString() {
-    string codeString = "";
-    for (const string &line : codeLines) {
-        codeString += line;
-    }
-
-    codeString.erase(
-            remove(codeString.begin(), codeString.end(), SPACE),
-            codeString.end()
-            );
-    size_t firstCurlyIndex = codeString.find_first_of('{');
-    size_t lastCurlyIndex = codeString.find_last_of('}');
-    codeString = codeString.substr(firstCurlyIndex + 1, lastCurlyIndex - firstCurlyIndex - 1);
-
-    return codeString;
 }
 
 int Function::extractParameterCount() {

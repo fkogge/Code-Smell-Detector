@@ -1,5 +1,5 @@
 //
-// Created by kogge on 2/18/2023.
+// Created by Francis Kogge on 2/18/2023.
 //
 
 #ifndef CODESMELLDETECTOR_FUNCTION_H
@@ -8,6 +8,7 @@
 
 #include <string>
 #include <vector>
+
 using namespace std;
 
 /**
@@ -27,7 +28,7 @@ public:
     /*
      * Initialize all function properties
      */
-    Function(const vector<string> &codeLines);
+    explicit Function(const vector<string> &codeLines);
 
     /*
      * Get the number of lines of code (LOC) in this function
@@ -43,7 +44,6 @@ public:
      * Get the name of this function
      */
     string getName() const;
-    string getCodeString() const;
 
     /*
      * Get the code from the body of the function. Each element in the list
@@ -58,11 +58,9 @@ private:
     string name;
     size_t numLinesOfCode;
     int numParameters;
-    string codeString;
 
     string extractName();
     int extractParameterCount();
-    string transformToCodeString();
     string getFunctionHeader() const;
 
     // Helper method mainly for getting code between common matching
