@@ -50,7 +50,6 @@ void CodeSmellDetector::extractFunctions() {
         Function function(functionContent);
         functionList.push_back(function);
 
-
         currentLineNumber = (openParenLineNumber == endLineNumber) ? endLineNumber + 1 : endLineNumber;
     }
 }
@@ -64,7 +63,7 @@ void CodeSmellDetector::skipBlankLines(size_t &currentLineNumber) {
 void CodeSmellDetector::skipLinesUntilFunctionHeader(size_t &currentLineNumber) {
     while (currentLineNumber < fileLineCount &&
             (!containsCharacter(linesFromFile[currentLineNumber], Function::OPENING_PAREN)
-            //|| containsCharacter(linesFromFile[currentLineNumber], ';') TODO: do I need this check?
+            //|| containsCharacter(linesFromFile[currentLineNumber], ';') TODO: do I need this check? - this prevented oneline functions from being processed
             )
         ) {
         currentLineNumber++;

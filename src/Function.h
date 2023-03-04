@@ -23,7 +23,7 @@ public:
     static const char OPENING_CURLY_BRACKET;
     static const char CLOSING_CURLY_BRACKET;
     static const char COMMA;
-    static const char SPACE;
+    static const char SEMICOLON;
 
     /*
      * Initialize all function properties

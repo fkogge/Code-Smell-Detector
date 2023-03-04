@@ -17,7 +17,7 @@ const char Function::CLOSING_PAREN = ')';
 const char Function::OPENING_CURLY_BRACKET = '{';
 const char Function::CLOSING_CURLY_BRACKET = '}';
 const char Function::COMMA = ',';
-const char Function::SPACE = ' ';
+const char Function::SEMICOLON = ';';
 
 Function::Function(const vector<string> &codeLines) {
     this->codeLines = codeLines;
