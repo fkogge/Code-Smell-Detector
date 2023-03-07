@@ -24,6 +24,7 @@ Function::Function(const vector<string> &codeLines) {
     this->numLinesOfCode = codeLines.size();
     this->name = extractName();
     this->numParameters = extractParameterCount();
+    this->codeString = generateCodeString();
 }
 
 size_t Function::getNumberOfLinesOfCode() const {
@@ -69,6 +70,15 @@ int Function::extractParameterCount() {
 
 }
 
+string Function::generateCodeString() {
+    ostringstream ss;
+    for (const string &line : codeLines) {
+        ss << line;
+    }
+    //return ss.str();
+    return getSubstringBetweenCharacters(ss.str(), OPENING_CURLY_BRACKET, CLOSING_CURLY_BRACKET);
+}
+
 string Function::getFunctionHeader() const {
     return codeLines[FIRST_LINE];
 }
@@ -96,5 +106,9 @@ vector<string> Function::getFunctionBody() const {
 string Function::getSubstringBetweenCharacters(const string &line, const char &left, const char &right) {
     size_t leftIndex = line.find_first_of(left);
     size_t rightIndex = line.find_last_of(right);
-    return line.substr(leftIndex + 1, leftIndex - rightIndex - 1);
+    return line.substr(leftIndex + 1, rightIndex - leftIndex - 1);
+}
+
+string Function::getCodeString() const {
+    return codeString;
 }

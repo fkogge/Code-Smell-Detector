@@ -51,6 +51,8 @@ public:
      */
     vector<string> getFunctionBody() const;
 
+    string getCodeString() const;
+
 private:
     static const size_t FIRST_LINE; // Line 1 stored at index 0
 
@@ -58,10 +60,12 @@ private:
     string name;
     size_t numLinesOfCode;
     int numParameters;
+    string codeString;
 
     string extractName();
     int extractParameterCount();
     string getFunctionHeader() const;
+    string generateCodeString();
 
     // Helper method mainly for getting code between common matching
     // tokens such as parentheses or curly brackets

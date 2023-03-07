@@ -144,8 +144,8 @@ void CodeSmellDetector::detectDuplicatedCode() {
             Function firstFunction = functionList[i];
             Function secondFunction = functionList[j];
 
-            double similarityIndex = jaccardTokenSimilarityIndex(firstFunction.getFunctionBody(),
-                                                                 secondFunction.getFunctionBody());
+            double similarityIndex = jaccardBiGramSimilarityIndex(firstFunction.getCodeString(),
+                                                                 secondFunction.getCodeString());
             if (similarityIndex > MAX_SIMILARITY_INDEX) {
                 DuplicatedCode duplicatedCode(
                         DUPLICATED_CODE,
@@ -159,74 +159,41 @@ void CodeSmellDetector::detectDuplicatedCode() {
     }
 }
 
-double CodeSmellDetector::jaccardTokenSimilarityIndex(const vector<string> &firstFunctionBody, const vector<string> &secondFunctionBody) {
-    unordered_map<string, int> firstUniqueTokens;
-    unordered_map<string, int> secondUniqueTokens;
-    unordered_map<string, int> allUniqueTokens;
-    int matchingTokens = 0;
-    int totalTokens = 0;
+double CodeSmellDetector::jaccardBiGramSimilarityIndex(const string &firstCodeString, const string &secondCodeString) {
+    unordered_set<string> firstBigrams;
+    unordered_set<string> secondBigrams;
 
-    computeFunctionTokenCounts(firstFunctionBody, firstUniqueTokens);
-    computeFunctionTokenCounts(secondFunctionBody, secondUniqueTokens);
-    allUniqueTokens = getAllUniqueTokenCounts(firstUniqueTokens, secondUniqueTokens);
+    // Get bigrams for each function
+    fillBigramSet(firstBigrams, firstCodeString);
+    fillBigramSet(secondBigrams, secondCodeString);
 
-    // Token counts in both functions
-    for (const auto &firstTokenEntry : firstUniqueTokens) {
-        auto matchingTokenEntry = secondUniqueTokens.find(firstTokenEntry.first);
-        // If found matching token
-        if (matchingTokenEntry != secondUniqueTokens.end()) {
-            matchingTokens += firstTokenEntry.second + matchingTokenEntry->second;
+    // Intersection of bigrams across both functions
+    size_t matchingBigrams = 0;
+    for (const string &bigram : firstBigrams) {
+        // If bigram from first function is also a bigram in second function
+        if (secondBigrams.find(bigram) != secondBigrams.end()) {
+            matchingBigrams++;
         }
     }
 
-    // Total token counts in either function
-    for (const auto &tokenEntry : allUniqueTokens) {
-        totalTokens += tokenEntry.second;
+    // All unique bigrams in either function
+    size_t totalUniqueBigrams = firstBigrams.size(); // either function's bigrams is a subset
+    for (const string &bigram : secondBigrams) {
+        // If we haven't recorded unique bigram from second function yet
+        if (firstBigrams.find(bigram) == firstBigrams.end()) {
+            totalUniqueBigrams++;
+        }
     }
 
-    return static_cast<double>(matchingTokens) / totalTokens;
+    return static_cast<double>(matchingBigrams) / static_cast<double>(totalUniqueBigrams);
 }
 
-void CodeSmellDetector::computeFunctionTokenCounts(const vector<string> &functionBody, unordered_map<string, int> &tokenCounts) {
-    for (const string &line : functionBody) {
-        istringstream iss(line);
-        string token;
-
-        while (iss >> token) {
-            auto tokenEntry = tokenCounts.find(token);
-
-            if (tokenEntry == tokenCounts.end()) {
-                // Record new token
-                tokenCounts.insert({token, 1});
-            } else {
-                // Update token count if already recorded
-                tokenEntry->second++;
-            }
-        }
+void CodeSmellDetector::fillBigramSet(unordered_set<string> &bigramSet, const string &codeString) {
+    for (int i = 0; i < codeString.size() - 1; i++) {
+        ostringstream ss;
+        ss << codeString[i] << codeString[i + 1];
+        bigramSet.insert(ss.str());
     }
-}
-
-unordered_map<string, int>
-CodeSmellDetector::getAllUniqueTokenCounts(const unordered_map<string, int> &firstFunctionTokens,
-                                           const unordered_map<string, int> &secondFunctionTokens) {
-
-    unordered_map<string, int> allUniqueTokens(firstFunctionTokens);
-
-    for (const auto& secondTokenEntry : secondFunctionTokens) {
-        string token = secondTokenEntry.first;
-        int count = secondTokenEntry.second;
-        auto tokenEntry = allUniqueTokens.find(token);
-
-        if (tokenEntry == firstFunctionTokens.end()) {
-            // Record unique token from second function
-            allUniqueTokens.insert({token, count});
-        } else {
-            // Matching token in both functions -> update the count
-            tokenEntry->second += count;
-        }
-    }
-
-    return allUniqueTokens;
 }
 
 vector<string> CodeSmellDetector::getFunctionNames() const {
@@ -268,3 +235,5 @@ bool CodeSmellDetector::hasLongParameterListSmell() const {
 bool CodeSmellDetector::hasDuplicateCodeSmell() const {
     return !duplicatedCodeOccurrences.empty();
 }
+
+
