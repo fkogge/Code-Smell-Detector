@@ -137,8 +137,8 @@ private:
     void detectDuplicatedCode();
 
     /*
-     * Calculates the Jaccard similarity indexes of two strings using bigram comparisons. For example, if the input
-     * is two strings "abcd" and "abce", then the compared bigram sets are:
+     * Calculates the Jaccard similarity indexes of two strings using bigram comparisons.
+     * For example, if the input is two strings "abcd" and "abce", then the compared bigram sets are:
      *
      * - ["ab", "bc", "cd"]
      * - ["ab", "bc", "ce"]
@@ -151,9 +151,12 @@ private:
      *
      * - ["ab", "bc", "cd", "ce"]
      *
-     * Then the similarity index is calculated by dividing the intersection by the union:
+     * Then the similarity index is calculated by dividing the intersection count by the union count:
      *
      * - 2 / 4 = 50%
+     *
+     * In the implementation, I just keep track of the counts instead of the actual sets since
+     * creating the intersection and union sets is not necessary.
      */
     static double jaccardBiGramSimilarityIndex(const string &firstCodeString, const string &secondCodeString);
     static void fillBigramSet(unordered_set<string> &bigramSet, const string &codeString);
