@@ -175,7 +175,8 @@ double CodeSmellDetector::jaccardBiGramSimilarityIndex(const string &firstCodeSt
     }
 
     // All unique bigrams in either function
-    size_t totalUniqueBigrams = firstBigrams.size(); // either function's bigrams is a subset
+    // Initialize using first function bigrams as either is a subset
+    size_t totalUniqueBigrams = firstBigrams.size();
     for (const string &bigram : secondBigrams) {
         // If we haven't recorded unique bigram from second function yet
         if (firstBigrams.find(bigram) == firstBigrams.end()) {

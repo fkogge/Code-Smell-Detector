@@ -5,6 +5,7 @@
 #include "CodeSmellDetector.h"
 #include <csignal>
 #include <algorithm>
+#include <iomanip>
 
 using namespace std;
 
@@ -206,7 +207,8 @@ void printDuplicatedCodeInfo(const CodeSmellDetector &codeSmellDetector) {
 
         for (const CodeSmellDetector::DuplicatedCode &occurrence : duplicatedCodeOccurrences) {
             cout << "The functions " << occurrence.functionNames.first << " and " << occurrence.functionNames.second
-                 << " are duplicated. Their similarity percentage is " << occurrence.similarityIndex * 100
+                 << " are duplicated - their similarity percentage is "
+                 << setprecision(2) << fixed << occurrence.similarityIndex * 100 << "%." // round 2 decimal places
                  << endl;
         }
     } else {
