@@ -124,6 +124,9 @@ private:
     void skipBlankLines(size_t &currentLineNumber);
     void skipLinesUntilFunctionHeader(size_t &currentLineNumber);
     void skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumber);
+    static bool isBlankLine(const string &line);
+    static bool lineEndsWith(const string &line, const char &character);
+    static bool isNotBeginningOfFunctionDefinition(const string &line);
 
     size_t findFunctionClosingCurlyBracketLine(size_t startLineNumber);
 
@@ -137,17 +140,29 @@ private:
     void detectDuplicatedCode();
 
     /*
-     * Calculates the Jaccard similarity index of the two function bodies. This does a token by token comparison
-     * of the counts of each token, to consider that certain tokens could be repeated (i.e. common keywords such as
-     * for, while, int). Given that Jaccard similarity is (intersection) / (union of two sets), I define the
-     * intersection as the counts of each unique matching token seen in both functions, while I define the union as
-     * the sum of the counts of all unique tokens seen across either function. This will provide a more accurate
-     * calculation of whether the two functions are duplicated.
+     * Calculates the Jaccard similarity indexes of two strings using bigram comparisons.
+     * For example, if the input is two strings "abcd" and "abce", then the compared bigram sets are:
+     *
+     * - ["ab", "bc", "cd"]
+     * - ["ab", "bc", "ce"]
+     *
+     * The intersection of the two sets is the set of matching bigram tokens across both sets:
+     *
+     * - ["ab", "bc"]
+     *
+     * The union of the two sets is all unique bigram tokens across either set:
+     *
+     * - ["ab", "bc", "cd", "ce"]
+     *
+     * Then the similarity index is calculated by dividing the intersection count by the union count:
+     *
+     * - 2 / 4 = 50%
+     *
+     * In the implementation, I just keep track of the counts instead of the actual sets since
+     * creating the intersection and union sets is not necessary.
      */
-    static double jaccardTokenSimilarityIndex(const vector<string> &firstFunctionBody, const vector<string> &secondFunctionBody);
-    static void computeFunctionTokenCounts(const vector<string> &functionBody, unordered_map<string, int> &tokenCounts);
-    static unordered_map<string, int> getAllUniqueTokenCounts(const unordered_map<string, int> &firstFunctionTokens,
-                                                              const unordered_map<string, int> &secondFunctionTokens);
+    static double jaccardBiGramSimilarityIndex(const string &firstCodeString, const string &secondCodeString);
+    static void fillBigramSet(unordered_set<string> &bigramSet, const string &codeString);
     static bool containsCharacter(const string &str, const char &character);
 };
 
