@@ -39,6 +39,10 @@ string Function::getName() const {
     return name;
 }
 
+string Function::getCodeString() const {
+    return codeString;
+}
+
 string Function::extractName() {
     string functionHeader = getFunctionHeader();
     istringstream iss(functionHeader);
@@ -83,32 +87,8 @@ string Function::getFunctionHeader() const {
     return codeLines[FIRST_LINE];
 }
 
-vector<string> Function::getFunctionBody() const {
-    size_t bodyStartLine = (codeLines[FIRST_LINE].find(OPENING_CURLY_BRACKET) != string::npos) ? 1 : 2;
-
-    vector<string> functionBody;
-
-    // If function is defined and written in one line
-    if (numLinesOfCode == 1) {
-        string body = getSubstringBetweenCharacters(codeLines[FIRST_LINE],
-                                                    OPENING_CURLY_BRACKET,
-                                                    CLOSING_CURLY_BRACKET);
-        functionBody.push_back(body);
-    } else {
-        for (size_t i = bodyStartLine; i < numLinesOfCode - 1; i++) {
-            functionBody.push_back(codeLines[i]);
-        }
-    }
-
-    return functionBody;
-}
-
 string Function::getSubstringBetweenCharacters(const string &line, const char &left, const char &right) {
     size_t leftIndex = line.find_first_of(left);
     size_t rightIndex = line.find_last_of(right);
     return line.substr(leftIndex + 1, rightIndex - leftIndex - 1);
-}
-
-string Function::getCodeString() const {
-    return codeString;
 }

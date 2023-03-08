@@ -69,7 +69,7 @@ bool invalidFileExtension(const string &filename) {
     return dotIndex == string::npos || filename.substr(dotIndex) != ".cpp";
 }
 
-bool fillFileContents(vector<string> &fileContents, const string& filename) {
+bool fillFileContents(vector<string> &fileContents, const string &filename) {
     ifstream inputFile;
     inputFile.open(filename);
 
@@ -173,6 +173,7 @@ void printLongMethodInfo(const CodeSmellDetector &codeSmellDetector) {
     if (codeSmellDetector.hasLongMethodSmell()) {
         vector<CodeSmellDetector::LongMethod> longMethodOccurrences =
                 codeSmellDetector.getLongMethodOccurrences();
+
         for (const CodeSmellDetector::LongMethod &longMethod : longMethodOccurrences) {
             cout << "The " << longMethod.functionName
                  << " function is a " << CodeSmellDetector::smellTypeToString(longMethod.type)
@@ -207,7 +208,7 @@ void printDuplicatedCodeInfo(const CodeSmellDetector &codeSmellDetector) {
 
         for (const CodeSmellDetector::DuplicatedCode &occurrence : duplicatedCodeOccurrences) {
             cout << "The functions " << occurrence.functionNames.first << " and " << occurrence.functionNames.second
-                 << " are duplicated - their similarity percentage is "
+                 << " are duplicated. Their similarity percentage is "
                  << setprecision(2) << fixed << occurrence.similarityIndex * 100 << "%." // round 2 decimal places
                  << endl;
         }

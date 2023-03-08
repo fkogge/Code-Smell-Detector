@@ -46,12 +46,6 @@ public:
     string getName() const;
 
     /*
-     * Get the code from the body of the function. Each element in the list
-     * is a line of code from the function.
-     */
-    vector<string> getFunctionBody() const;
-
-    /*
      * Get the code from the body of the function in the form of a string.
      */
     string getCodeString() const;
