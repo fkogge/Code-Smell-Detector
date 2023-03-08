@@ -110,6 +110,7 @@ private:
     static const int MAX_LINES_OF_CODE = 15;
     static const int MAX_PARAMETER_COUNT = 3;
     static constexpr const double MAX_SIMILARITY_INDEX = 0.75;
+    static const string INCLUDE_DIRECTIVE;
 
     vector<LongMethod> longMethodOccurrences;
     vector<LongParameterList> longParameterListOccurrences;

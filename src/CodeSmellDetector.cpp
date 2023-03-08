@@ -13,6 +13,8 @@
 
 using namespace std;
 
+const string CodeSmellDetector::INCLUDE_DIRECTIVE = "#include";
+
 CodeSmellDetector::CodeSmellDetector(const vector<string> &linesFromFile) {
     this->linesFromFile = linesFromFile;
     this->linesFromFile.insert(this->linesFromFile.begin(), "SKIP INDEX 0");
@@ -61,7 +63,7 @@ void CodeSmellDetector::skipBlankLines(size_t &currentLineNumber) {
 }
 
 void CodeSmellDetector::skipLinesUntilFunctionHeader(size_t &currentLineNumber) {
-    // TODO do i need to skip hashtag lines too?
+    // TODO: do i need to skip hashtag lines too?
     while (currentLineNumber < fileLineCount && isNotBeginningOfFunctionDefinition(linesFromFile[currentLineNumber])) {
         currentLineNumber++;
     }
@@ -244,6 +246,7 @@ bool CodeSmellDetector::lineEndsWith(const string &line, const char &character) 
 
 bool CodeSmellDetector::isNotBeginningOfFunctionDefinition(const string &line) {
     return isBlankLine(line) ||
+        line.find(INCLUDE_DIRECTIVE) != string::npos || // if is directive
         !containsCharacter(line, Function::OPENING_PAREN) ||
         lineEndsWith(line, Function::SEMICOLON);
 }
