@@ -7,7 +7,6 @@
 
 #include <string>
 #include <vector>
-#include <unordered_map>
 #include <unordered_set>
 #include "Function.h"
 
@@ -127,7 +126,7 @@ private:
     void skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumber);
     static bool isBlankLine(const string &line);
     static bool lineEndsWith(const string &line, const char &character);
-    static bool isNotBeginningOfFunctionDefinition(const string &line);
+    static bool isBeginningOfFunctionDefinition(const string &line);
 
     size_t findFunctionClosingCurlyBracketLine(size_t startLineNumber);
 

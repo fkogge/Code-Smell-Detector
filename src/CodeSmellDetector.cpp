@@ -9,7 +9,7 @@
 #include <iostream>
 #include <climits>
 #include <algorithm>
-#include <unordered_map>
+#include <unordered_set>
 
 using namespace std;
 
@@ -63,8 +63,7 @@ void CodeSmellDetector::skipBlankLines(size_t &currentLineNumber) {
 }
 
 void CodeSmellDetector::skipLinesUntilFunctionHeader(size_t &currentLineNumber) {
-    // TODO: do i need to skip hashtag lines too?
-    while (currentLineNumber < fileLineCount && isNotBeginningOfFunctionDefinition(linesFromFile[currentLineNumber])) {
+    while (currentLineNumber < fileLineCount && !isBeginningOfFunctionDefinition(linesFromFile[currentLineNumber])) {
         currentLineNumber++;
     }
 }
@@ -244,11 +243,11 @@ bool CodeSmellDetector::lineEndsWith(const string &line, const char &character) 
     return line[lastIndex] == character;
 }
 
-bool CodeSmellDetector::isNotBeginningOfFunctionDefinition(const string &line) {
-    return isBlankLine(line) ||
-        line.find(INCLUDE_DIRECTIVE) != string::npos || // if is directive
-        !containsCharacter(line, Function::OPENING_PAREN) ||
-        lineEndsWith(line, Function::SEMICOLON);
+bool CodeSmellDetector::isBeginningOfFunctionDefinition(const string &line) {
+    return !isBlankLine(line) &&
+        line.find(INCLUDE_DIRECTIVE) == string::npos && // is not include directive
+        containsCharacter(line, Function::OPENING_PAREN) &&
+        !lineEndsWith(line, Function::SEMICOLON);
 }
 
 
