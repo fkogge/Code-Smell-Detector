@@ -55,17 +55,14 @@ void CodeSmellDetector::extractFunctions() {
 }
 
 void CodeSmellDetector::skipBlankLines(size_t &currentLineNumber) {
-    while (currentLineNumber < fileLineCount && linesFromFile[currentLineNumber].empty()) {
+    while (currentLineNumber < fileLineCount && isBlankLine(linesFromFile[currentLineNumber])) {
         currentLineNumber++;
     }
 }
 
 void CodeSmellDetector::skipLinesUntilFunctionHeader(size_t &currentLineNumber) {
-    while (currentLineNumber < fileLineCount &&
-            (!containsCharacter(linesFromFile[currentLineNumber], Function::OPENING_PAREN)
-            //|| containsCharacter(linesFromFile[currentLineNumber], ';') TODO: do I need this check? - this prevented oneline functions from being processed
-            )
-        ) {
+    // TODO do i need to skip hashtag lines too?
+    while (currentLineNumber < fileLineCount && isNotBeginningOfFunctionDefinition(linesFromFile[currentLineNumber])) {
         currentLineNumber++;
     }
 }
@@ -106,11 +103,11 @@ size_t CodeSmellDetector::findFunctionClosingCurlyBracketLine(size_t startLineNu
 void CodeSmellDetector::extractFunctionContent(vector<string> &functionContent, size_t startLineNumber, size_t endLineNumber) {
     for (size_t i = startLineNumber; i <= endLineNumber; i++) {
         string line = linesFromFile[i];
-        if (line.empty() || line == "\n" || line == "\r") {
+        if (isBlankLine(line)) {
             continue;
         }
 
-        functionContent.push_back(linesFromFile[i]);
+        functionContent.push_back(line);
     }
 }
 
@@ -234,6 +231,21 @@ bool CodeSmellDetector::hasLongParameterListSmell() const {
 
 bool CodeSmellDetector::hasDuplicateCodeSmell() const {
     return !duplicatedCodeOccurrences.empty();
+}
+
+bool CodeSmellDetector::isBlankLine(const string &line) {
+    return line.empty() || line == "\r" || line == "\n";
+}
+
+bool CodeSmellDetector::lineEndsWith(const string &line, const char &character) {
+    size_t lastIndex = line.find_last_not_of(" \r\n"); // Ignore whitespace and carriage return
+    return line[lastIndex] == character;
+}
+
+bool CodeSmellDetector::isNotBeginningOfFunctionDefinition(const string &line) {
+    return isBlankLine(line) ||
+        !containsCharacter(line, Function::OPENING_PAREN) ||
+        lineEndsWith(line, Function::SEMICOLON);
 }
 
 

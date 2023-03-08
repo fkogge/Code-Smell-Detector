@@ -51,6 +51,9 @@ public:
      */
     vector<string> getFunctionBody() const;
 
+    /*
+     * Get the code from the body of the function in the form of a string.
+     */
     string getCodeString() const;
 
 private:
