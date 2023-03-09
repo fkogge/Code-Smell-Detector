@@ -52,7 +52,6 @@ int main(int argc, char *argv[]) {
     }
 
     CodeSmellDetector codeSmellDetector(fileContents);
-
     run(codeSmellDetector);
 
     return 0;

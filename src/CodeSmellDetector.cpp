@@ -32,16 +32,14 @@ CodeSmellDetector::CodeSmellDetector(const vector<string> &linesFromFile) {
 
 void CodeSmellDetector::extractFunctions() {
     size_t currentLineNumber = 1;
-    size_t openParenLineNumber;
-    size_t openCurlyLineNumber;
 
     while (currentLineNumber < fileLineCount) {
         skipBlankLines(currentLineNumber);
         skipLinesUntilFunctionHeader(currentLineNumber);
-        openParenLineNumber = currentLineNumber;
+        size_t openParenLineNumber = currentLineNumber;
 
         skipLinesUntilOpeningCurlyBracket(currentLineNumber);
-        openCurlyLineNumber = currentLineNumber;
+        size_t openCurlyLineNumber = currentLineNumber;
 
         string line = linesFromFile[currentLineNumber];
         size_t endLineNumber = findFunctionClosingCurlyBracketLine(openCurlyLineNumber);
@@ -52,7 +50,7 @@ void CodeSmellDetector::extractFunctions() {
         Function function(functionContent);
         functionList.push_back(function);
 
-        currentLineNumber = (openParenLineNumber == endLineNumber) ? endLineNumber + 1 : endLineNumber;
+        currentLineNumber = endLineNumber + 1;
     }
 }
 
@@ -63,7 +61,7 @@ void CodeSmellDetector::skipBlankLines(size_t &currentLineNumber) {
 }
 
 void CodeSmellDetector::skipLinesUntilFunctionHeader(size_t &currentLineNumber) {
-    while (currentLineNumber < fileLineCount && !isBeginningOfFunctionDefinition(linesFromFile[currentLineNumber])) {
+    while (currentLineNumber < fileLineCount && isNotBeginningOfFunctionDefinition(linesFromFile[currentLineNumber])) {
         currentLineNumber++;
     }
 }
@@ -104,7 +102,7 @@ size_t CodeSmellDetector::findFunctionClosingCurlyBracketLine(size_t startLineNu
 void CodeSmellDetector::extractFunctionContent(vector<string> &functionContent, size_t startLineNumber, size_t endLineNumber) {
     for (size_t i = startLineNumber; i <= endLineNumber; i++) {
         string line = linesFromFile[i];
-        if (isBlankLine(line)) {
+        if (isBlankLine(line) || isComment(line)) {
             continue;
         }
 
@@ -244,11 +242,20 @@ bool CodeSmellDetector::lineEndsWith(const string &line, const char &character) 
     return line[lastIndex] == character;
 }
 
-bool CodeSmellDetector::isBeginningOfFunctionDefinition(const string &line) {
-    return !isBlankLine(line) &&
-        line.find(INCLUDE_DIRECTIVE) == string::npos && // is not include directive
-        containsCharacter(line, Function::OPENING_PAREN) &&
-        !lineEndsWith(line, Function::SEMICOLON);
+bool CodeSmellDetector::isComment(const string &line) {
+    if (line.empty()) {
+        return false;
+    }
+
+    string strToCompare = line.substr(line.find_first_not_of(' ')); // Strip leading whitespace
+    return strToCompare[0] == '/' || strToCompare[0] == '*';
+}
+
+bool CodeSmellDetector::isNotBeginningOfFunctionDefinition(const string &line) {
+    return isBlankLine(line) || isComment(line) ||
+        line.find(INCLUDE_DIRECTIVE) != string::npos || // if is include directive
+        !containsCharacter(line, Function::OPENING_PAREN) ||
+        lineEndsWith(line, Function::SEMICOLON);
 }
 
 
