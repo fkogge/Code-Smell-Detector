@@ -10,17 +10,13 @@
 #include <climits>
 #include <algorithm>
 #include <unordered_set>
+#include "CodeParseUtility.h"
 
 using namespace std;
 
-const string CodeSmellDetector::INCLUDE_DIRECTIVE = "#include";
-
 CodeSmellDetector::CodeSmellDetector(const vector<string> &linesFromFile) {
-    this->linesFromFile = linesFromFile;
-    this->linesFromFile.insert(this->linesFromFile.begin(), "SKIP INDEX 0");
-    this->fileLineCount = linesFromFile.size();
+    extractFunctions(linesFromFile);
 
-    extractFunctions();
     detectLongMethod();
     detectLongParameterList();
     detectDuplicatedCode();
@@ -30,83 +26,13 @@ CodeSmellDetector::CodeSmellDetector(const vector<string> &linesFromFile) {
     }
 }
 
-void CodeSmellDetector::extractFunctions() {
-    size_t currentLineNumber = 1;
+void CodeSmellDetector::extractFunctions(const vector<string> &linesFromFile) {
+    CodeParseUtility codeParseUtility(linesFromFile);
+    vector<vector<string>> functionContentList = codeParseUtility.getFunctionContentList();
 
-    while (currentLineNumber < fileLineCount) {
-        skipBlankLines(currentLineNumber);
-        skipLinesUntilFunctionHeader(currentLineNumber);
-        size_t openParenLineNumber = currentLineNumber;
-
-        skipLinesUntilOpeningCurlyBracket(currentLineNumber);
-        size_t openCurlyLineNumber = currentLineNumber;
-
-        string line = linesFromFile[currentLineNumber];
-        size_t endLineNumber = findFunctionClosingCurlyBracketLine(openCurlyLineNumber);
-
-        // Now create the function object
-        vector<string> functionContent;
-        extractFunctionContent(functionContent, openParenLineNumber, endLineNumber);
+    for (const vector<string> &functionContent : functionContentList) {
         Function function(functionContent);
         functionList.push_back(function);
-
-        currentLineNumber = endLineNumber + 1;
-    }
-}
-
-void CodeSmellDetector::skipBlankLines(size_t &currentLineNumber) {
-    while (currentLineNumber < fileLineCount && isBlankLine(linesFromFile[currentLineNumber])) {
-        currentLineNumber++;
-    }
-}
-
-void CodeSmellDetector::skipLinesUntilFunctionHeader(size_t &currentLineNumber) {
-    while (currentLineNumber < fileLineCount && isNotBeginningOfFunctionDefinition(linesFromFile[currentLineNumber])) {
-        currentLineNumber++;
-    }
-}
-
-void CodeSmellDetector::skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumber) {
-    while (currentLineNumber < fileLineCount &&
-           !containsCharacter(linesFromFile[currentLineNumber], Function::OPENING_CURLY_BRACKET)) {
-        currentLineNumber++;
-    }
-}
-
-bool CodeSmellDetector::containsCharacter(const string &str, const char &character) {
-    return str.find(character) != string::npos;
-}
-
-size_t CodeSmellDetector::findFunctionClosingCurlyBracketLine(size_t startLineNumber) {
-    // Pseudo-stack (don't need actual stack since we're not doing anything with the brackets)
-    int openCurlyCount = 0;
-
-    for (size_t currentLineNumber = startLineNumber; currentLineNumber < linesFromFile.size(); currentLineNumber++) {
-        for (const char &currentChar : linesFromFile[currentLineNumber]) {
-            if (currentChar == Function::OPENING_CURLY_BRACKET) {
-                openCurlyCount++; // Push stack
-            } else if (currentChar == Function::CLOSING_CURLY_BRACKET) {
-                if (openCurlyCount == 1) {
-                    return currentLineNumber; // Found matching bracket
-                } else if (openCurlyCount > 0) {
-                    openCurlyCount--; // Pop stack
-                }
-            } // else skip
-        }
-    }
-
-    // Should never reach here if input file is valid syntax
-    return -1;
-}
-
-void CodeSmellDetector::extractFunctionContent(vector<string> &functionContent, size_t startLineNumber, size_t endLineNumber) {
-    for (size_t i = startLineNumber; i <= endLineNumber; i++) {
-        string line = linesFromFile[i];
-        if (isBlankLine(line) || isComment(line)) {
-            continue;
-        }
-
-        functionContent.push_back(line);
     }
 }
 
@@ -232,30 +158,3 @@ bool CodeSmellDetector::hasLongParameterListSmell() const {
 bool CodeSmellDetector::hasDuplicateCodeSmell() const {
     return !duplicatedCodeOccurrences.empty();
 }
-
-bool CodeSmellDetector::isBlankLine(const string &line) {
-    return line.empty() || line == "\r" || line == "\n";
-}
-
-bool CodeSmellDetector::lineEndsWith(const string &line, const char &character) {
-    size_t lastIndex = line.find_last_not_of(" \r\n"); // Ignore whitespace and carriage return
-    return line[lastIndex] == character;
-}
-
-bool CodeSmellDetector::isComment(const string &line) {
-    if (line.empty()) {
-        return false;
-    }
-
-    string strToCompare = line.substr(line.find_first_not_of(' ')); // Strip leading whitespace
-    return strToCompare[0] == '/' || strToCompare[0] == '*';
-}
-
-bool CodeSmellDetector::isNotBeginningOfFunctionDefinition(const string &line) {
-    return isBlankLine(line) || isComment(line) ||
-        line.find(INCLUDE_DIRECTIVE) != string::npos || // if is include directive
-        !containsCharacter(line, Function::OPENING_PAREN) ||
-        lineEndsWith(line, Function::SEMICOLON);
-}
-
-

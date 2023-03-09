@@ -115,25 +115,11 @@ private:
     vector<LongParameterList> longParameterListOccurrences;
     vector<DuplicatedCode> duplicatedCodeOccurrences;
 
-    size_t fileLineCount;
-    vector<string> linesFromFile;
     vector<Function> functionList;
     vector<string> functionNames;
 
-    // Skip lines while updating currentLineNumber (passed by reference)
-    void skipBlankLines(size_t &currentLineNumber);
-    void skipLinesUntilFunctionHeader(size_t &currentLineNumber);
-    void skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumber);
-    static bool isBlankLine(const string &line);
-    static bool lineEndsWith(const string &line, const char &character);
-    static bool isComment(const string &line);
-    static bool isNotBeginningOfFunctionDefinition(const string &line);
-
-    size_t findFunctionClosingCurlyBracketLine(size_t startLineNumber);
-
     // Store each line of code in functionContent (passed by reference)
-    void extractFunctionContent(vector<string> &functionContent, size_t startLineNumber, size_t endLineNumber);
-    void extractFunctions();
+    void extractFunctions(const vector<string> &linesFromFile);
 
     // Code smell detection helper methods
     void detectLongMethod();
@@ -164,7 +150,6 @@ private:
      */
     static double jaccardBiGramSimilarityIndex(const string &firstCodeString, const string &secondCodeString);
     static void fillBigramSet(unordered_set<string> &bigramSet, const string &codeString);
-    static bool containsCharacter(const string &str, const char &character);
 };
 
 

@@ -8,16 +8,10 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include "CodeParseUtility.h"
+#include <stdexcept>
 
 using namespace std;
-
-const size_t Function::FIRST_LINE = 0;
-const char Function::OPENING_PAREN = '(';
-const char Function::CLOSING_PAREN = ')';
-const char Function::OPENING_CURLY_BRACKET = '{';
-const char Function::CLOSING_CURLY_BRACKET = '}';
-const char Function::COMMA = ',';
-const char Function::SEMICOLON = ';';
 
 Function::Function(const vector<string> &codeLines) {
     this->codeLines = codeLines;
@@ -49,29 +43,34 @@ string Function::extractName() {
 
     string throwawayReturnType;
     iss >> throwawayReturnType;
-    string restOfFunctionHeader;
-    iss >> restOfFunctionHeader;
 
-    return restOfFunctionHeader.substr(0, restOfFunctionHeader.find(OPENING_PAREN));
+    string next;
+    iss >> next;
+    // If function is pointer or reference type, get next token
+    if (next == "*" || next == "&") {
+        iss >> next;
+    }
+
+    string restOfFunctionHeader = next;
+    return restOfFunctionHeader.substr(0, restOfFunctionHeader.find(CodeParseUtility::OPENING_PAREN));
 }
 
 int Function::extractParameterCount() {
-    string paramString = getSubstringBetweenCharacters(getFunctionHeader(),
-                                                       OPENING_PAREN,
-                                                       CLOSING_PAREN);
-
-    if (paramString.empty()) {
+    string paramString = getSubstringBetweenCharacters(
+            getFunctionHeader(),CodeParseUtility::OPENING_PAREN,CodeParseUtility::CLOSING_PAREN);
+    // If parameter contents is empty or only whitespaces (couldn't find index that isn't a whitespace)
+    if (paramString.empty() || paramString.find_first_not_of(CodeParseUtility::WHITESPACE) == string::npos) {
         return 0;
     }
 
     int paramCount = 1;
     for (char c : paramString) {
-        if (c == COMMA) {
+        if (c == CodeParseUtility::COMMA) {
             paramCount++;
         }
     }
-    return paramCount;
 
+    return paramCount;
 }
 
 string Function::generateCodeString() {
@@ -79,12 +78,24 @@ string Function::generateCodeString() {
     for (const string &line : codeLines) {
         ss << line;
     }
-    //return ss.str();
-    return getSubstringBetweenCharacters(ss.str(), OPENING_CURLY_BRACKET, CLOSING_CURLY_BRACKET);
+    return getSubstringBetweenCharacters(
+            ss.str(),CodeParseUtility::OPENING_CURLY_BRACKET,CodeParseUtility:: CLOSING_CURLY_BRACKET);
 }
 
 string Function::getFunctionHeader() const {
-    return codeLines[FIRST_LINE];
+    string firstLine = codeLines[FIRST_LINE];
+
+    if (numLinesOfCode > 1) {
+        return codeLines[FIRST_LINE];
+    } else {
+        size_t closingParenIndex = CodeParseUtility::getClosingIndex(
+                firstLine, CodeParseUtility::OPENING_PAREN, CodeParseUtility::CLOSING_PAREN);
+        if (closingParenIndex == CodeParseUtility::NOT_FOUND) {
+            throw invalid_argument("Failed to find matching curly bracket");
+        }
+
+        return firstLine.substr(0, closingParenIndex + 1);
+    }
 }
 
 string Function::getSubstringBetweenCharacters(const string &line, const char &left, const char &right) {

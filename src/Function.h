@@ -17,14 +17,6 @@ using namespace std;
  */
 class Function {
 public:
-    // Common tokens
-    static const char OPENING_PAREN;
-    static const char CLOSING_PAREN;
-    static const char OPENING_CURLY_BRACKET;
-    static const char CLOSING_CURLY_BRACKET;
-    static const char COMMA;
-    static const char SEMICOLON;
-
     /*
      * Initialize all function properties
      */
@@ -51,7 +43,7 @@ public:
     string getCodeString() const;
 
 private:
-    static const size_t FIRST_LINE; // Line 1 stored at index 0
+    static const size_t FIRST_LINE = 0; // Line 1 stored at index 0
 
     vector<string> codeLines;
     string name;

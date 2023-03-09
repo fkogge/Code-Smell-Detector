@@ -51,8 +51,13 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    CodeSmellDetector codeSmellDetector(fileContents);
-    run(codeSmellDetector);
+    try {
+        CodeSmellDetector codeSmellDetector(fileContents);
+        run(codeSmellDetector);
+    } catch (const std::exception &e) {
+        cerr << e.what() << endl;
+        return EXIT_FAILURE;
+    }
 
     return 0;
 }
