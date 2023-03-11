@@ -1,2 +1,2 @@
 CodeSmellDetector: CodeSmellDetector.h CodeSmellDetector.cpp Function.h Function.cpp CodeParseUtility.cpp CodeParseUtility.h main.cpp
-	g++ CodeSmellDetector.h Function.h Function.cpp CodeParseUtility.cpp CodeParseUtility.h main.cpp -o CodeSmellDetector
+	g++ CodeSmellDetector.h CodeSmellDetector.cpp Function.h Function.cpp CodeParseUtility.cpp CodeParseUtility.h main.cpp -o CodeSmellDetector
