@@ -59,48 +59,59 @@ public:
         }
     };
 
-    /*
+
+    /**
      * Initialize all fields and run code smell detection algorithms
+     * @param linesFromFile lines of code from the input file
      */
     explicit CodeSmellDetector(const vector<string> &linesFromFile);
 
-    /*
+    /**
      * Get a list of function names extracted from the file
+     * @return vector of function names
      */
     vector<string> getFunctionNames() const;
 
-    /*
+    /**
      * Get all occurrences of Long Method code smell
+     * @return vector of LongMethod objects
      */
     vector<LongMethod> getLongMethodOccurrences() const;
 
-    /*
+    /**
      * Get all occurrences of Long Parameter List code smell
+     * @return vector of LongParameterList objects
      */
     vector<LongParameterList> getLongParameterListOccurrences() const;
 
-    /*
+    /**
      * Get all occurrences of Duplicated Code smell
+     * @return vector of DuplicatedCode objects
      */
     vector<DuplicatedCode> getDuplicateCodeOccurrences() const;
 
-    /*
+    /**
      * Was Long Method detected?
+     * @return true if detected, false if not
      */
     bool hasLongMethodSmell() const;
 
-    /*
-     * Was Long Parameter List detected?
-     */
+    /**
+    * Was Long Parameter List detected?
+    * @return true if detected, false if not
+    */
     bool hasLongParameterListSmell() const;
 
-    /*
-     * Was Duplicate Code detected?
+    /**
+     * Was Duplicated Code detected?
+     * @return true if detected, false if not
      */
     bool hasDuplicateCodeSmell() const;
 
-    /*
+    /**
      * Convert SmellType enum to string representation
+     * @param type the enum
+     * @return string representation
      */
     static string smellTypeToString(SmellType type);
 
@@ -111,29 +122,17 @@ private:
     static constexpr const double MAX_SIMILARITY_INDEX = 0.75;
     static const string INCLUDE_DIRECTIVE;
 
+    // Lists to store code smell occurrences
     vector<LongMethod> longMethodOccurrences;
     vector<LongParameterList> longParameterListOccurrences;
     vector<DuplicatedCode> duplicatedCodeOccurrences;
 
-    size_t fileLineCount;
-    vector<string> linesFromFile;
+    // Lists to store processed functions
     vector<Function> functionList;
     vector<string> functionNames;
 
-    // Skip lines while updating currentLineNumber (passed by reference)
-    void skipBlankLines(size_t &currentLineNumber);
-    void skipLinesUntilFunctionHeader(size_t &currentLineNumber);
-    void skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumber);
-    static bool isBlankLine(const string &line);
-    static bool lineEndsWith(const string &line, const char &character);
-    static bool isComment(const string &line);
-    static bool isNotBeginningOfFunctionDefinition(const string &line);
-
-    size_t findFunctionClosingCurlyBracketLine(size_t startLineNumber);
-
     // Store each line of code in functionContent (passed by reference)
-    void extractFunctionContent(vector<string> &functionContent, size_t startLineNumber, size_t endLineNumber);
-    void extractFunctions();
+    void extractFunctions(const vector<string> &linesFromFile);
 
     // Code smell detection helper methods
     void detectLongMethod();
@@ -141,30 +140,31 @@ private:
     void detectDuplicatedCode();
 
     /*
-     * Calculates the Jaccard similarity indexes of two strings using bigram comparisons.
-     * For example, if the input is two strings "abcd" and "abce", then the compared bigram sets are:
+     * Calculates the Jaccard similarity indexes of two strings using character set comparisons.
+     * For example, if the input is two strings "abcd" and "abce", then the compared sets are:
      *
-     * - ["ab", "bc", "cd"]
-     * - ["ab", "bc", "ce"]
+     * - ['a', 'b', 'c', 'd']
+     * - ['a', 'b', 'c', 'e']
      *
-     * The intersection of the two sets is the set of matching bigram tokens across both sets:
+     * The intersection of the two sets is the set of matching characters across both sets:
      *
-     * - ["ab", "bc"]
+     * - ['a', 'b', 'c']
      *
-     * The union of the two sets is all unique bigram tokens across either set:
+     * The union of the two sets is all unique characters across either set:
      *
-     * - ["ab", "bc", "cd", "ce"]
+     * - ['a', 'b', 'c', 'd', 'e']
      *
      * Then the similarity index is calculated by dividing the intersection count by the union count:
      *
-     * - 2 / 4 = 50%
+     * - 3 / 5 = 60%
      *
      * In the implementation, I just keep track of the counts instead of the actual sets since
-     * creating the intersection and union sets is not necessary.
+     * creating the intersection and union sets is not necessary to calculate the similarity index.
      */
-    static double jaccardBiGramSimilarityIndex(const string &firstCodeString, const string &secondCodeString);
-    static void fillBigramSet(unordered_set<string> &bigramSet, const string &codeString);
-    static bool containsCharacter(const string &str, const char &character);
+    static double jaccardSimilarityIndex(const string &firstCodeString, const string &secondCodeString);
+
+    // Helper for filling the character set
+    static void fillCharSet(unordered_set<char> &charSet, const string &codeString);
 };
 
 
