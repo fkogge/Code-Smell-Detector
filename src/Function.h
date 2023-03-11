@@ -17,28 +17,34 @@ using namespace std;
  */
 class Function {
 public:
-    /*
+    /**
      * Initialize all function properties
+     * @param codeLines lines of code that comprise the function
      */
     explicit Function(const vector<string> &codeLines);
 
-    /*
+    /**
      * Get the number of lines of code (LOC) in this function
+     * @return number of LOC
      */
     size_t getNumberOfLinesOfCode() const;
 
-    /*
+    /**
      * Get number of parameters in this function
+     * @return number of parameters
      */
     int getNumberOfParameters() const;
 
-    /*
+    /**
      * Get the name of this function
+     * @return name of the function
      */
     string getName() const;
 
-    /*
-     * Get the code from the body of the function in the form of a string.
+    /**
+     * Get the code from the body of the function in the form of a string. Mashes
+     * the function into one giant string.
+     * @return string representation of the function code
      */
     string getCodeString() const;
 
@@ -51,14 +57,11 @@ private:
     int numParameters;
     string codeString;
 
-    string extractName();
-    int extractParameterCount();
+    // Helper methods for parsing different parts of the function
+    string extractName() const;
+    int extractParameterCount() const;
     string getFunctionHeader() const;
-    string generateCodeString();
-
-    // Helper method mainly for getting code between common matching
-    // tokens such as parentheses or curly brackets
-    static string getSubstringBetweenCharacters(const string &line, const char &left, const char &right);
+    string generateCodeString() const;
 };
 
 

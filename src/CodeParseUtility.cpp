@@ -5,6 +5,8 @@
 #include "CodeParseUtility.h"
 #include <string>
 #include <stdexcept>
+#include <unordered_map>
+#include <iostream>
 
 const char CodeParseUtility::OPENING_PAREN = '(';
 const char CodeParseUtility::CLOSING_PAREN = ')';
@@ -15,13 +17,18 @@ const char CodeParseUtility::SEMICOLON = ';';
 const char CodeParseUtility::WHITESPACE = ' ';
 const char CodeParseUtility::FWD_SLASH = '/';
 const char CodeParseUtility::POINTER = '*';
-const std::string CodeParseUtility::INCLUDE_DIRECTIVE = "#include";
+const string CodeParseUtility::INCLUDE_DIRECTIVE = "#include";
+const string CodeParseUtility::SENTINEL_VAL = "SKIP INDEX 0";
+const unordered_map<char, char> CodeParseUtility::BRACKET_MAP = {
+        {OPENING_CURLY_BRACKET, CLOSING_CURLY_BRACKET},
+        { OPENING_PAREN, CLOSING_PAREN}
+};
 
 using namespace std;
 
 CodeParseUtility::CodeParseUtility(const vector<string> &linesFromFile) {
     this->linesFromFile = linesFromFile;
-    this->linesFromFile.insert(this->linesFromFile.begin(), "SKIP INDEX 0");
+    this->linesFromFile.insert(this->linesFromFile.begin(), SENTINEL_VAL);
     this->fileLineCount = linesFromFile.size();
 }
 
@@ -69,7 +76,6 @@ void CodeParseUtility::skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumb
 }
 
 
-
 bool CodeParseUtility::isBlankLine(const string &line) {
     return line.empty() || line == "\r" || line == "\n";
 }
@@ -87,16 +93,24 @@ void CodeParseUtility::extractFunctionContent(vector<string> &functionContent, s
     }
 }
 
-size_t CodeParseUtility::getClosingIndex(const string &line, const char &openingChar, const char &closingChar, size_t &openCount) {
-    for (int index = 0; index < line.size(); index++) {
+size_t CodeParseUtility::getClosingBracketIndex(const string &line, const char &openingBracket) {
+    size_t startAtZero = 0;
+    return CodeParseUtility::getClosingBracketIndex(line, openingBracket, startAtZero);
+}
+
+size_t CodeParseUtility::getClosingBracketIndex(const string &line, const char &openingBracket, size_t &openCount) {
+    for (size_t index = 0; index < line.size(); index++) {
         char currentChar = line[index];
-        if (currentChar == openingChar) {
-            openCount++; // Push stack
-        } else if (currentChar == closingChar) {
+
+        if (currentChar == openingBracket) {
+            openCount++;
+        } else if (currentChar == BRACKET_MAP.at(openingBracket)) {
             if (openCount == 1) {
-                return index; // Found matching bracket
+                // Found initial matching bracket
+                return index;
             } else if (openCount > 0) {
-                openCount--; // Not matching -> pop stack
+                // Found matching bracket but not for the initial opening one
+                openCount--;
             }
         } // else skip
     }
@@ -107,11 +121,11 @@ size_t CodeParseUtility::getClosingIndex(const string &line, const char &opening
 size_t CodeParseUtility::findFunctionClosingCurlyBracketLine(size_t startLineNumber) {
     size_t openCurlyCount = 0;
     for (size_t currentLineNumber = startLineNumber; currentLineNumber < linesFromFile.size(); currentLineNumber++) {
-        size_t closingIndex = getClosingIndex(linesFromFile[currentLineNumber],
-                                           OPENING_CURLY_BRACKET,
-                                           CLOSING_CURLY_BRACKET,
-                                           openCurlyCount);
+        size_t closingIndex = getClosingBracketIndex(linesFromFile[currentLineNumber],
+                                                     OPENING_CURLY_BRACKET,openCurlyCount);
+
         if (closingIndex != NOT_FOUND) {
+            // Found the closing bracket on the current line number
             return currentLineNumber;
         }
     }
@@ -137,15 +151,10 @@ bool CodeParseUtility::isComment(const string &line) {
     }
 
     string strToCompare = line.substr(line.find_first_not_of(WHITESPACE)); // Strip leading whitespace
-    return strToCompare[0] == FWD_SLASH || strToCompare[0] == POINTER;}
+    return strToCompare[0] == FWD_SLASH || strToCompare[0] == POINTER;
+}
 
 bool CodeParseUtility::lineEndsWith(const string &line, const char &character) {
     size_t lastIndex = line.find_last_not_of(" \r\n"); // Ignore whitespace and carriage return
     return line[lastIndex] == character;
 }
-
-size_t CodeParseUtility::getClosingIndex(const string &line, const char &openingChar, const char &closingChar) {
-    size_t startAtZero = 0;
-    return CodeParseUtility::getClosingIndex(line, openingChar, closingChar, startAtZero);
-}
-

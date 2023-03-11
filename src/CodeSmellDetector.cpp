@@ -5,8 +5,6 @@
 #include "CodeSmellDetector.h"
 #include "Function.h"
 #include <vector>
-#include <sstream>
-#include <iostream>
 #include <climits>
 #include <algorithm>
 #include <unordered_set>
@@ -27,11 +25,11 @@ CodeSmellDetector::CodeSmellDetector(const vector<string> &linesFromFile) {
 }
 
 void CodeSmellDetector::extractFunctions(const vector<string> &linesFromFile) {
-    CodeParseUtility codeParseUtility(linesFromFile);
-    vector<vector<string>> functionContentList = codeParseUtility.getFunctionContentList();
+    CodeParseUtility parser(linesFromFile);
+    vector<vector<string>> functionContentList = parser.getFunctionContentList();
 
-    for (const vector<string> &functionContent : functionContentList) {
-        Function function(functionContent);
+    for (const vector<string> &content : functionContentList) {
+        Function function(content);
         functionList.push_back(function);
     }
 }
@@ -66,56 +64,51 @@ void CodeSmellDetector::detectDuplicatedCode() {
             Function firstFunction = functionList[i];
             Function secondFunction = functionList[j];
 
-            double similarityIndex = jaccardBiGramSimilarityIndex(firstFunction.getCodeString(),
-                                                                 secondFunction.getCodeString());
+            double similarityIndex = jaccardSimilarityIndex(firstFunction.getCodeString(),
+                                                            secondFunction.getCodeString());
+
             if (similarityIndex > MAX_SIMILARITY_INDEX) {
-                DuplicatedCode duplicatedCode(
-                        DUPLICATED_CODE,
-                        similarityIndex,
-                        firstFunction.getName(),
-                        secondFunction.getName()
-                );
+                DuplicatedCode duplicatedCode(DUPLICATED_CODE, similarityIndex,
+                                              firstFunction.getName(),secondFunction.getName());
                 duplicatedCodeOccurrences.push_back(duplicatedCode);
             }
         }
     }
 }
 
-double CodeSmellDetector::jaccardBiGramSimilarityIndex(const string &firstCodeString, const string &secondCodeString) {
-    unordered_set<string> firstBigrams;
-    unordered_set<string> secondBigrams;
+double CodeSmellDetector::jaccardSimilarityIndex(const string &firstCodeString, const string &secondCodeString) {
+    unordered_set<char> firstChars;
+    unordered_set<char> secondChars;
 
-    // Get bigrams for each function
-    fillBigramSet(firstBigrams, firstCodeString);
-    fillBigramSet(secondBigrams, secondCodeString);
+    // Get char sets for each function
+    fillCharSet(firstChars, firstCodeString);
+    fillCharSet(secondChars, secondCodeString);
 
-    // Intersection of bigrams across both functions
-    size_t matchingBigrams = 0;
-    for (const string &bigram : firstBigrams) {
+    // Intersection of chars across both functions
+    size_t matchingChars = 0;
+    for (const char &currentChar : firstChars) {
         // If bigram from first function is also a bigram in second function
-        if (secondBigrams.find(bigram) != secondBigrams.end()) {
-            matchingBigrams++;
+        if (secondChars.find(currentChar) != secondChars.end()) {
+            matchingChars++;
         }
     }
 
-    // All unique bigrams in either function
-    // Initialize using first function bigrams as either is a subset
-    size_t totalUniqueBigrams = firstBigrams.size();
-    for (const string &bigram : secondBigrams) {
-        // If we haven't recorded unique bigram from second function yet
-        if (firstBigrams.find(bigram) == firstBigrams.end()) {
-            totalUniqueBigrams++;
+    // All unique chars in either function (we can initialize using number of unique
+    // chars from first function since either set is a subset of the union set)
+    size_t totalUniqueChars = firstChars.size();
+    for (const char &currentChar : secondChars) {
+        // If we haven't recorded unique char from second function yet
+        if (firstChars.find(currentChar) == firstChars.end()) {
+            totalUniqueChars++;
         }
     }
 
-    return static_cast<double>(matchingBigrams) / static_cast<double>(totalUniqueBigrams);
+    return static_cast<double>(matchingChars) / static_cast<double>(totalUniqueChars);
 }
 
-void CodeSmellDetector::fillBigramSet(unordered_set<string> &bigramSet, const string &codeString) {
-    for (int i = 0; i < codeString.size() - 1; i++) {
-        ostringstream ss;
-        ss << codeString[i] << codeString[i + 1];
-        bigramSet.insert(ss.str());
+void CodeSmellDetector::fillCharSet(unordered_set<char> &charSet, const string &codeString) {
+    for (char c : codeString) {
+        charSet.insert(c);
     }
 }
 

@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 using namespace std;
 
 /**
@@ -27,25 +28,36 @@ public:
     static const string INCLUDE_DIRECTIVE;
 
     static const size_t NOT_FOUND = SIZE_MAX;
+    static const string SENTINEL_VAL; // Using one based indexing to match line numbers
+    static const unordered_map<char, char> BRACKET_MAP; // Match opening brackets to their closing brackets
 
+    /**
+     * Initialize the line count and file lines list.
+     * @param linesFromFile lines of code from the input file
+     */
     explicit CodeParseUtility(const vector<string> &linesFromFile);
 
-    /*
+    /**
      * Get the index of the matching closing bracket. Defaults the count of the open brackets to 0.
+     * @param line line of code
+     * @param openingBracket opening bracket to match
+     * @return index where matching closing bracket resides
      */
-    static size_t getClosingIndex(const string &line, const char &openingChar, const char &closingChar);
+    static size_t getClosingBracketIndex(const string &line, const char &openingBracket);
 
-    /*
-     * Get the index of the matching closing bracket, while using the count of the open brackets passed in
-     * by the client (passed by reference).
+    /**
+     * Stores each line of code from a function into a list. That list is then stored in
+     * another list which contains all of the function content lists.
+     * @return vector of function content vectors (2D vector)
      */
-    static size_t getClosingIndex(const string &line, const char &openingChar, const char &closingChar, size_t &openCount);
-
     vector<vector<string>> getFunctionContentList();
 
 private:
     size_t fileLineCount;
     vector<string> linesFromFile;
+
+    // Extract each line of code from the function and store in the content vector
+    void extractFunctionContent(vector<string> &functionContent, size_t startLineNumber, size_t endLineNumber);
 
     // Skip lines while updating currentLineNumber (passed by reference)
     void skipBlankLines(size_t &currentLineNumber);
@@ -59,8 +71,16 @@ private:
     static bool isBlankLine(const string &line);
     static bool containsCharacter(const string &str, const char &character);
 
+    /*
+     * Get the index of the matching closing bracket, while using the count of the open brackets passed in
+     * by the client (passed by reference). This works similar to using a stack to keep track of the open
+     * brackets that haven't been matched yet, but we don't actually need a stack and can just keep
+     * track of the count instead.
+     */
+    static size_t getClosingBracketIndex(const string &line, const char &openingBracket, size_t &openCount);
+
+    // This just finds the closing bracket index, but returns the line number it was found on instead.
     size_t findFunctionClosingCurlyBracketLine(size_t startLineNumber);
-    void extractFunctionContent(vector<string> &functionContent, size_t startLineNumber, size_t endLineNumber);
 };
 
 

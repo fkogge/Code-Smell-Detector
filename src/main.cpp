@@ -214,6 +214,7 @@ void printDuplicatedCodeInfo(const CodeSmellDetector &codeSmellDetector) {
             cout << "The functions " << occurrence.functionNames.first << " and " << occurrence.functionNames.second
                  << " are duplicated. Their similarity percentage is "
                  << setprecision(2) << fixed << occurrence.similarityIndex * 100 << "%." // round 2 decimal places
+                 //<< occurrence.similarityIndex
                  << endl;
         }
     } else {
