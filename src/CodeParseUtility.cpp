@@ -6,7 +6,6 @@
 #include <string>
 #include <stdexcept>
 #include <unordered_map>
-#include <iostream>
 
 const char CodeParseUtility::OPENING_PAREN = '(';
 const char CodeParseUtility::CLOSING_PAREN = ')';
@@ -16,7 +15,8 @@ const char CodeParseUtility::COMMA = ',';
 const char CodeParseUtility::SEMICOLON = ';';
 const char CodeParseUtility::WHITESPACE = ' ';
 const char CodeParseUtility::FWD_SLASH = '/';
-const char CodeParseUtility::POINTER = '*';
+const char CodeParseUtility::ASTERISK = '*';
+const char CodeParseUtility::AMPERSAND = '&';
 const string CodeParseUtility::INCLUDE_DIRECTIVE = "#include";
 const string CodeParseUtility::SENTINEL_VAL = "SKIP INDEX 0";
 const unordered_map<char, char> CodeParseUtility::BRACKET_MAP = {
@@ -151,7 +151,7 @@ bool CodeParseUtility::isComment(const string &line) {
     }
 
     string strToCompare = line.substr(line.find_first_not_of(WHITESPACE)); // Strip leading whitespace
-    return strToCompare[0] == FWD_SLASH || strToCompare[0] == POINTER;
+    return strToCompare[0] == FWD_SLASH || strToCompare[0] == ASTERISK;
 }
 
 bool CodeParseUtility::lineEndsWith(const string &line, const char &character) {

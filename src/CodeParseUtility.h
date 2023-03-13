@@ -16,17 +16,12 @@ using namespace std;
 class CodeParseUtility {
 public:
     // Common C++ tokens
-    static const char OPENING_PAREN;
-    static const char CLOSING_PAREN;
-    static const char OPENING_CURLY_BRACKET;
-    static const char CLOSING_CURLY_BRACKET;
-    static const char COMMA;
-    static const char SEMICOLON;
-    static const char WHITESPACE;
-    static const char FWD_SLASH;
-    static const char POINTER;
-    static const string INCLUDE_DIRECTIVE;
+    static const char OPENING_PAREN, CLOSING_PAREN,
+        OPENING_CURLY_BRACKET, CLOSING_CURLY_BRACKET,
+        COMMA, SEMICOLON, WHITESPACE, FWD_SLASH,
+        ASTERISK, AMPERSAND;
 
+    static const string INCLUDE_DIRECTIVE;
     static const size_t NOT_FOUND = SIZE_MAX;
     static const string SENTINEL_VAL; // Using one based indexing to match line numbers
     static const unordered_map<char, char> BRACKET_MAP; // Match opening brackets to their closing brackets

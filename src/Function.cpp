@@ -38,6 +38,8 @@ string Function::getCodeString() const {
 }
 
 string Function::extractName() const {
+    const string ampersand = string(1, CodeParseUtility::AMPERSAND);
+    const string asterisk = string(1, CodeParseUtility::ASTERISK);
     string functionHeader = getFunctionHeader();
     istringstream iss(functionHeader);
 
@@ -47,7 +49,7 @@ string Function::extractName() const {
     string next;
     iss >> next;
     // If function is pointer or reference type, get next token
-    if (next == "*" || next == "&") {
+    if (next == ampersand || next == asterisk) {
         iss >> next;
     }
 
