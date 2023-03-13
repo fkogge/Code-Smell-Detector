@@ -115,7 +115,7 @@ void run(const CodeSmellDetector &codeSmellDetector) {
 }
 
 void displayMainMenu() {
-    cout << "\nPlease choose one of the following options: " << endl;
+    cout << "\nPlease choose one of the following options (enter integer from 1 to 4): " << endl;
     cout << LONG_METHOD_OPTION << ". Long Method/Function Detection" << endl;
     cout << LONG_PARAMETER_LIST_OPTION << ". Long Parameter List Detection" << endl;
     cout << DUPLICATED_CODE_DETECTION_OPTION << ". Duplicated Code Detection" << endl;
