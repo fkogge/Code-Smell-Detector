@@ -69,7 +69,7 @@ void CodeSmellDetector::detectDuplicatedCode() {
 
             if (similarityIndex > MAX_SIMILARITY_INDEX) {
                 DuplicatedCode duplicatedCode(DUPLICATED_CODE, similarityIndex,
-                                              firstFunction.getName(),secondFunction.getName());
+                                              firstFunction.getName(), secondFunction.getName());
                 duplicatedCodeOccurrences.push_back(duplicatedCode);
             }
         }
