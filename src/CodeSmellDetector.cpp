@@ -8,7 +8,7 @@
 #include <climits>
 #include <algorithm>
 #include <unordered_set>
-#include "CodeParseUtility.h"
+#include "Parser.h"
 
 using namespace std;
 
@@ -25,7 +25,7 @@ CodeSmellDetector::CodeSmellDetector(const vector<string> &linesFromFile) {
 }
 
 void CodeSmellDetector::extractFunctions(const vector<string> &linesFromFile) {
-    CodeParseUtility parser(linesFromFile);
+    Parser parser(linesFromFile);
     vector<vector<string>> functionContentList = parser.getFunctionContentList();
 
     for (const vector<string> &content : functionContentList) {

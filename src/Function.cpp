@@ -8,7 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
-#include "CodeParseUtility.h"
+#include "Parser.h"
 #include <stdexcept>
 
 using namespace std;
@@ -38,8 +38,8 @@ string Function::getCodeString() const {
 }
 
 string Function::extractName() const {
-    const string ampersand = string(1, CodeParseUtility::AMPERSAND);
-    const string asterisk = string(1, CodeParseUtility::ASTERISK);
+    const string ampersand = string(1, Parser::AMPERSAND);
+    const string asterisk = string(1, Parser::ASTERISK);
     string functionHeader = getFunctionHeader();
     istringstream iss(functionHeader);
 
@@ -54,25 +54,25 @@ string Function::extractName() const {
     }
 
     string restOfFunctionHeader = next;
-    return restOfFunctionHeader.substr(0, restOfFunctionHeader.find(CodeParseUtility::OPENING_PAREN));
+    return restOfFunctionHeader.substr(0, restOfFunctionHeader.find(Parser::OPENING_PAREN));
 }
 
 int Function::extractParameterCount() const {
     // Get substring between the parentheses
     string functionHeader = getFunctionHeader();
-    size_t leftIndex = functionHeader.find_first_of(CodeParseUtility::OPENING_PAREN);
-    size_t rightIndex = functionHeader.find_last_of(CodeParseUtility::CLOSING_PAREN);
+    size_t leftIndex = functionHeader.find_first_of(Parser::OPENING_PAREN);
+    size_t rightIndex = functionHeader.find_last_of(Parser::CLOSING_PAREN);
     string paramString = functionHeader.substr(leftIndex + 1, rightIndex - leftIndex - 1);
 
     // If parameter contents is empty
     // or only whitespaces (couldn't find index that isn't a whitespace)
-    if (paramString.empty() || paramString.find_first_not_of(CodeParseUtility::WHITESPACE) == string::npos) {
+    if (paramString.empty() || paramString.find_first_not_of(Parser::WHITESPACE) == string::npos) {
         return 0;
     }
 
     int paramCount = 1;
     for (char c : paramString) {
-        if (c == CodeParseUtility::COMMA) {
+        if (c == Parser::COMMA) {
             paramCount++;
         }
     }
@@ -94,8 +94,8 @@ string Function::getFunctionHeader() const {
     if (numLinesOfCode > 1) {
         return firstLine;
     } else {
-        size_t closingParenIndex = CodeParseUtility::getClosingBracketIndex(firstLine, CodeParseUtility::OPENING_PAREN);
-        if (closingParenIndex == CodeParseUtility::NOT_FOUND) {
+        size_t closingParenIndex = Parser::getClosingBracketIndex(firstLine, Parser::OPENING_PAREN);
+        if (closingParenIndex == Parser::NOT_FOUND) {
             throw invalid_argument("Failed to find matching curly bracket");
         }
 

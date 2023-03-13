@@ -2,37 +2,37 @@
 // Created by kogge on 3/8/2023.
 //
 
-#include "CodeParseUtility.h"
+#include "Parser.h"
 #include <string>
 #include <stdexcept>
 #include <unordered_map>
 
-const char CodeParseUtility::OPENING_PAREN = '(';
-const char CodeParseUtility::CLOSING_PAREN = ')';
-const char CodeParseUtility::OPENING_CURLY_BRACKET = '{';
-const char CodeParseUtility::CLOSING_CURLY_BRACKET = '}';
-const char CodeParseUtility::COMMA = ',';
-const char CodeParseUtility::SEMICOLON = ';';
-const char CodeParseUtility::WHITESPACE = ' ';
-const char CodeParseUtility::FWD_SLASH = '/';
-const char CodeParseUtility::ASTERISK = '*';
-const char CodeParseUtility::AMPERSAND = '&';
-const string CodeParseUtility::INCLUDE_DIRECTIVE = "#include";
-const string CodeParseUtility::SENTINEL_VAL = "SKIP INDEX 0";
-const unordered_map<char, char> CodeParseUtility::BRACKET_MAP = {
+const char Parser::OPENING_PAREN = '(';
+const char Parser::CLOSING_PAREN = ')';
+const char Parser::OPENING_CURLY_BRACKET = '{';
+const char Parser::CLOSING_CURLY_BRACKET = '}';
+const char Parser::COMMA = ',';
+const char Parser::SEMICOLON = ';';
+const char Parser::WHITESPACE = ' ';
+const char Parser::FWD_SLASH = '/';
+const char Parser::ASTERISK = '*';
+const char Parser::AMPERSAND = '&';
+const string Parser::INCLUDE_DIRECTIVE = "#include";
+const string Parser::SENTINEL_VAL = "SKIP INDEX 0";
+const unordered_map<char, char> Parser::BRACKET_MAP = {
         {OPENING_CURLY_BRACKET, CLOSING_CURLY_BRACKET},
         { OPENING_PAREN, CLOSING_PAREN}
 };
 
 using namespace std;
 
-CodeParseUtility::CodeParseUtility(const vector<string> &linesFromFile) {
+Parser::Parser(const vector<string> &linesFromFile) {
     this->linesFromFile = linesFromFile;
     this->linesFromFile.insert(this->linesFromFile.begin(), SENTINEL_VAL);
     this->fileLineCount = linesFromFile.size();
 }
 
-vector<vector<string>> CodeParseUtility::getFunctionContentList() {
+vector<vector<string>> Parser::getFunctionContentList() {
     vector<vector<string>> functionContentList;
     size_t currentLineNumber = 1;
 
@@ -56,31 +56,30 @@ vector<vector<string>> CodeParseUtility::getFunctionContentList() {
     return functionContentList;
 }
 
-void CodeParseUtility::skipBlankLines(size_t &currentLineNumber) {
+void Parser::skipBlankLines(size_t &currentLineNumber) {
     while (currentLineNumber < fileLineCount && isBlankLine(linesFromFile[currentLineNumber])) {
         currentLineNumber++;
     }
 }
 
-void CodeParseUtility::skipLinesUntilFunctionHeader(size_t &currentLineNumber) {
+void Parser::skipLinesUntilFunctionHeader(size_t &currentLineNumber) {
     while (currentLineNumber < fileLineCount && isNotBeginningOfFunctionDefinition(linesFromFile[currentLineNumber])) {
         currentLineNumber++;
     }
 }
 
-void CodeParseUtility::skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumber) {
-    while (currentLineNumber < fileLineCount &&
-           !containsCharacter(linesFromFile[currentLineNumber], OPENING_CURLY_BRACKET)) {
+void Parser::skipLinesUntilOpeningCurlyBracket(size_t &currentLineNumber) {
+    while (currentLineNumber < fileLineCount && !containsCharacter(linesFromFile[currentLineNumber], OPENING_CURLY_BRACKET)) {
         currentLineNumber++;
     }
 }
 
 
-bool CodeParseUtility::isBlankLine(const string &line) {
+bool Parser::isBlankLine(const string &line) {
     return line.empty() || line == "\r" || line == "\n";
 }
 
-void CodeParseUtility::extractFunctionContent(vector<string> &functionContent, size_t startLineNumber, size_t endLineNumber) {
+void Parser::extractFunctionContent(vector<string> &functionContent, size_t startLineNumber, size_t endLineNumber) {
     for (size_t i = startLineNumber; i <= endLineNumber; i++) {
         string line = linesFromFile[i];
 
@@ -93,12 +92,12 @@ void CodeParseUtility::extractFunctionContent(vector<string> &functionContent, s
     }
 }
 
-size_t CodeParseUtility::getClosingBracketIndex(const string &line, const char &openingBracket) {
+size_t Parser::getClosingBracketIndex(const string &line, const char &openingBracket) {
     size_t startAtZero = 0;
-    return CodeParseUtility::getClosingBracketIndex(line, openingBracket, startAtZero);
+    return Parser::getClosingBracketIndex(line, openingBracket, startAtZero);
 }
 
-size_t CodeParseUtility::getClosingBracketIndex(const string &line, const char &openingBracket, size_t &openCount) {
+size_t Parser::getClosingBracketIndex(const string &line, const char &openingBracket, size_t &openCount) {
     for (size_t index = 0; index < line.size(); index++) {
         char currentChar = line[index];
 
@@ -118,11 +117,10 @@ size_t CodeParseUtility::getClosingBracketIndex(const string &line, const char &
     return NOT_FOUND;
 }
 
-size_t CodeParseUtility::findFunctionClosingCurlyBracketLine(size_t startLineNumber) {
+size_t Parser::findFunctionClosingCurlyBracketLine(size_t startLineNumber) {
     size_t openCurlyCount = 0;
     for (size_t currentLineNumber = startLineNumber; currentLineNumber < linesFromFile.size(); currentLineNumber++) {
-        size_t closingIndex = getClosingBracketIndex(linesFromFile[currentLineNumber],
-                                                     OPENING_CURLY_BRACKET,openCurlyCount);
+        size_t closingIndex = getClosingBracketIndex(linesFromFile[currentLineNumber], OPENING_CURLY_BRACKET, openCurlyCount);
 
         if (closingIndex != NOT_FOUND) {
             // Found the closing bracket on the current line number
@@ -134,27 +132,28 @@ size_t CodeParseUtility::findFunctionClosingCurlyBracketLine(size_t startLineNum
     throw invalid_argument("Failed to find matching curly bracket");
 }
 
-bool CodeParseUtility::containsCharacter(const string &str, const char &character) {
+bool Parser::containsCharacter(const string &str, const char &character) {
     return str.find(character) != string::npos;
 }
 
-bool CodeParseUtility::isNotBeginningOfFunctionDefinition(const string &line) {
-    return isBlankLine(line) || isComment(line) ||
-           line.find(INCLUDE_DIRECTIVE) != string::npos || // if is include directive
-           !containsCharacter(line, OPENING_PAREN) ||
-           lineEndsWith(line, SEMICOLON); // check forward declarations
+bool Parser::isNotBeginningOfFunctionDefinition(const string &line) {
+    return isBlankLine(line) ||
+        isComment(line) ||
+        line.find(INCLUDE_DIRECTIVE) != string::npos || // if is #include directive
+        !containsCharacter(line, OPENING_PAREN) || // if does not have opening parenthesis
+        lineEndsWith(line, SEMICOLON); // if is a forward declarations
 }
 
-bool CodeParseUtility::isComment(const string &line) {
+bool Parser::isComment(const string &line) {
     if (line.empty()) {
         return false;
     }
 
     string strToCompare = line.substr(line.find_first_not_of(WHITESPACE)); // Strip leading whitespace
-    return strToCompare[0] == FWD_SLASH || strToCompare[0] == ASTERISK;
+    return strToCompare[0] == FWD_SLASH;
 }
 
-bool CodeParseUtility::lineEndsWith(const string &line, const char &character) {
+bool Parser::lineEndsWith(const string &line, const char &character) {
     size_t lastIndex = line.find_last_not_of(" \r\n"); // Ignore whitespace and carriage return
     return line[lastIndex] == character;
 }

@@ -2,8 +2,8 @@
 // Created by kogge on 3/8/2023.
 //
 
-#ifndef CODESMELLDETECTOR_CODEPARSEUTILITY_H
-#define CODESMELLDETECTOR_CODEPARSEUTILITY_H
+#ifndef CODESMELLDETECTOR_PARSER_H
+#define CODESMELLDETECTOR_PARSER_H
 
 #include <string>
 #include <vector>
@@ -11,9 +11,9 @@
 using namespace std;
 
 /**
- * Utility class for complex code parsing.
+ * Class for complex code parsing.
  */
-class CodeParseUtility {
+class Parser {
 public:
     // Common C++ tokens
     static const char OPENING_PAREN, CLOSING_PAREN,
@@ -30,7 +30,7 @@ public:
      * Initialize the line count and file lines list.
      * @param linesFromFile lines of code from the input file
      */
-    explicit CodeParseUtility(const vector<string> &linesFromFile);
+    explicit Parser(const vector<string> &linesFromFile);
 
     /**
      * Get the index of the matching closing bracket. Defaults the count of the open brackets to 0.
@@ -79,4 +79,4 @@ private:
 };
 
 
-#endif //CODESMELLDETECTOR_CODEPARSEUTILITY_H
+#endif //CODESMELLDETECTOR_PARSER_H
