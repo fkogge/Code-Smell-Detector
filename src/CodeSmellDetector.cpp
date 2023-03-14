@@ -87,7 +87,7 @@ double CodeSmellDetector::jaccardSimilarityIndex(const string &firstCodeString, 
     // Intersection of chars across both functions
     size_t matchingChars = 0;
     for (const char &currentChar : firstChars) {
-        // If bigram from first function is also a bigram in second function
+        // If char from first function is also a char in second function
         if (secondChars.find(currentChar) != secondChars.end()) {
             matchingChars++;
         }
