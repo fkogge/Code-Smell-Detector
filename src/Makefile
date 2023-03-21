@@ -1,2 +1,0 @@
-CodeSmellDetector: CodeSmellDetector.h CodeSmellDetector.cpp Function.h Function.cpp Parser.cpp Parser.h main.cpp
-	g++ CodeSmellDetector.h CodeSmellDetector.cpp Function.h Function.cpp Parser.cpp Parser.h main.cpp -o CodeSmellDetector
